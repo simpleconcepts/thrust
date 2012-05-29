@@ -40,10 +40,14 @@ void reduce_n(Context context, ValueIterator data, unsigned int n, BinaryFunctio
 {
   if (context.block_dimension() < n)
   {
+    // reduce problem down to block_dimension partial sums
     for (unsigned int i = context.block_dimension() + context.thread_index(); i < n; i += context.block_dimension())
       data[context.thread_index()] = binary_op(data[context.thread_index()], data[i]);
 
     context.barrier();
+
+    // new size of problem is block_dimension
+    n = context.block_dimension();
   }
 
   while (n > 1)
