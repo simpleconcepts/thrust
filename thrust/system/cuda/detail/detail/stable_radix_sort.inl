@@ -28,12 +28,15 @@
 #include <thrust/detail/type_traits.h>
 #include <thrust/detail/util/align.h>
 #include <thrust/detail/raw_pointer_cast.h>
+#include <thrust/system/system_error.h>
+#include <thrust/system/cuda/error.h>
 
 
 __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_BEGIN
 
 
-#include <thrust/system/cuda/detail/detail/b40c/radixsort_api.h>
+#include <thrust/system/cuda/detail/detail/b40c/radix_sort/enactor.cuh>
+#include <thrust/system/cuda/detail/detail/b40c/util/multi_buffer.cuh>
 
 namespace thrust
 {
@@ -56,7 +59,7 @@ void stable_radix_sort(RandomAccessIterator first,
     unsigned int num_elements = last - first;
 
     // ensure data is properly aligned
-    if (!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first), 2*sizeof(K)))
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first), 2*sizeof(K)))
     {
         thrust::detail::temporary_array<K, system> aligned_keys(first, last);
         stable_radix_sort(aligned_keys.begin(), aligned_keys.end());
@@ -64,30 +67,31 @@ void stable_radix_sort(RandomAccessIterator first,
         return;
     }
     
-    thrust::system::cuda::detail::detail::b40c_thrust::RadixSortingEnactor<K> sorter(num_elements);
-    thrust::system::cuda::detail::detail::b40c_thrust::RadixSortStorage<K>    storage;
+    thrust::system::cuda::detail::detail::b40c::radix_sort::Enactor   sorter;
+    thrust::system::cuda::detail::detail::b40c::util::DoubleBuffer<K> double_buffer;
     
     // allocate temporary buffers
     thrust::detail::temporary_array<K,    system> temp_keys(num_elements);
-    thrust::detail::temporary_array<int,  system> temp_spine(sorter.SpineElements());
-    thrust::detail::temporary_array<bool, system> temp_from_alt(2);
 
-    // define storage
-    storage.d_keys             = thrust::raw_pointer_cast(&*first);
-    storage.d_alt_keys         = thrust::raw_pointer_cast(&temp_keys[0]);
-    storage.d_spine            = thrust::raw_pointer_cast(&temp_spine[0]);
-    storage.d_from_alt_storage = thrust::raw_pointer_cast(&temp_from_alt[0]);
+    // hook up the double_buffer
+    double_buffer.d_keys[double_buffer.selector]     = thrust::raw_pointer_cast(&*first);
+    double_buffer.d_keys[double_buffer.selector ^ 1] = thrust::raw_pointer_cast(&temp_keys[0]);
+
+    // note the value of the selector
+    const int initial_selector = double_buffer.selector;
 
     // perform the sort
-    sorter.EnactSort(storage);
+    cudaError_t error = sorter.Sort(double_buffer, num_elements);
+    if(error)
+    {
+        throw thrust::system_error(error, thrust::cuda_category(), "stable_radix_sort: ");
+    }
     
-    // radix sort sometimes leaves results in the alternate buffers
-    if (storage.using_alternate_storage)
+    // radix sort sometimes leaves results in the temporary buffer
+    if(initial_selector != double_buffer.selector)
     {
         thrust::copy(temp_keys.begin(), temp_keys.end(), first);
     }
-
-    // temporary storage automatically freed
 }
 
 ///////////////////////
@@ -109,14 +113,14 @@ void stable_radix_sort_by_key(RandomAccessIterator1 first1,
     unsigned int num_elements = last1 - first1;
 
     // ensure data is properly aligned
-    if (!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first1), 2*sizeof(K)))
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first1), 2*sizeof(K)))
     {
         thrust::detail::temporary_array<K,system> aligned_keys(first1, last1);
         stable_radix_sort_by_key(aligned_keys.begin(), aligned_keys.end(), first2);
         thrust::copy(aligned_keys.begin(), aligned_keys.end(), first1);
         return;
     }
-    if (!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first2), 2*sizeof(V)))
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first2), 2*sizeof(V)))
     {
         thrust::detail::temporary_array<V,system> aligned_values(first2, first2 + num_elements);
         stable_radix_sort_by_key(first1, last1, aligned_values.begin());
@@ -124,34 +128,35 @@ void stable_radix_sort_by_key(RandomAccessIterator1 first1,
         return;
     }
    
-    thrust::system::cuda::detail::detail::b40c_thrust::RadixSortingEnactor<K,V> sorter(num_elements);
-    thrust::system::cuda::detail::detail::b40c_thrust::RadixSortStorage<K,V>    storage;
+    thrust::system::cuda::detail::detail::b40c::radix_sort::Enactor     sorter;
+    thrust::system::cuda::detail::detail::b40c::util::DoubleBuffer<K,V> double_buffer;
     
     // allocate temporary buffers
     thrust::detail::temporary_array<K,    system> temp_keys(num_elements);
     thrust::detail::temporary_array<V,    system> temp_values(num_elements);
-    thrust::detail::temporary_array<int,  system> temp_spine(sorter.SpineElements());
-    thrust::detail::temporary_array<bool, system> temp_from_alt(2);
 
-    // define storage
-    storage.d_keys             = thrust::raw_pointer_cast(&*first1);
-    storage.d_values           = thrust::raw_pointer_cast(&*first2);
-    storage.d_alt_keys         = thrust::raw_pointer_cast(&temp_keys[0]);
-    storage.d_alt_values       = thrust::raw_pointer_cast(&temp_values[0]);
-    storage.d_spine            = thrust::raw_pointer_cast(&temp_spine[0]);
-    storage.d_from_alt_storage = thrust::raw_pointer_cast(&temp_from_alt[0]);
+    // hook up the double_buffer
+    double_buffer.d_keys[double_buffer.selector]       = thrust::raw_pointer_cast(&*first1);
+    double_buffer.d_values[double_buffer.selector]     = thrust::raw_pointer_cast(&*first2);
+    double_buffer.d_keys[double_buffer.selector ^ 1]   = thrust::raw_pointer_cast(&temp_keys[0]);
+    double_buffer.d_values[double_buffer.selector ^ 1] = thrust::raw_pointer_cast(&temp_values[0]);
+
+    // note the value of the selector
+    const int initial_selector = double_buffer.selector;
 
     // perform the sort
-    sorter.EnactSort(storage);
+    cudaError_t error = sorter.Sort(double_buffer, num_elements);
+    if(error)
+    {
+        throw thrust::system_error(error, thrust::cuda_category(), "stable_radix_sort_by_key: ");
+    }
     
-    // radix sort sometimes leaves results in the alternate buffers
-    if (storage.using_alternate_storage)
+    // radix sort sometimes leaves results in the temporary buffers
+    if(initial_selector != double_buffer.selector)
     {
         thrust::copy(  temp_keys.begin(),   temp_keys.end(), first1);
         thrust::copy(temp_values.begin(), temp_values.end(), first2);
     }
-    
-    // temporary storage automatically freed
 }
 
 
