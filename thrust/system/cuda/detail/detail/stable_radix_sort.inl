@@ -67,8 +67,8 @@ void stable_radix_sort(RandomAccessIterator first,
         return;
     }
     
-    thrust::system::cuda::detail::detail::b40c::radix_sort::Enactor   sorter;
-    thrust::system::cuda::detail::detail::b40c::util::DoubleBuffer<K> double_buffer;
+    __thrust_b40c::b40c::radix_sort::Enactor   sorter;
+    __thrust_b40c::b40c::util::DoubleBuffer<K> double_buffer;
     
     // allocate temporary buffers
     thrust::detail::temporary_array<K,    system> temp_keys(num_elements);
@@ -128,8 +128,8 @@ void stable_radix_sort_by_key(RandomAccessIterator1 first1,
         return;
     }
    
-    thrust::system::cuda::detail::detail::b40c::radix_sort::Enactor     sorter;
-    thrust::system::cuda::detail::detail::b40c::util::DoubleBuffer<K,V> double_buffer;
+    __thrust_b40c::b40c::radix_sort::Enactor     sorter;
+    __thrust_b40c::b40c::util::DoubleBuffer<K,V> double_buffer;
     
     // allocate temporary buffers
     thrust::detail::temporary_array<K,    system> temp_keys(num_elements);

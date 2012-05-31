@@ -28,6 +28,6 @@
 //#define B40C_NS_PREFIX namespace thrust{ namespace detail {
 //#define B40C_NS_POSTFIX } }
 
-#define B40C_NS_PREFIX  namespace thrust{ namespace system{ namespace cuda{ namespace detail{ namespace detail{ 
-#define B40C_NS_POSTFIX                 }                 }               }                 }                 } 
+#define B40C_NS_PREFIX  namespace __thrust_b40c{
+#define B40C_NS_POSTFIX }
 
