@@ -182,7 +182,7 @@ struct Enactor
 			ProblemInstance &problem_instance,
 			Enactor &enactor)
 		{
-			// We moved data between storage buffers at every pass
+			// Update selector.  (We moved data between storage buffers at every pass)
 			problem_instance.storage.selector =
 				(problem_instance.storage.selector + NUM_PASSES) & 0x1;
 
@@ -226,6 +226,11 @@ struct Enactor
 		bool 			debug 			= false)
 	{
 		typedef ProblemInstance<DoubleBuffer, int> ProblemInstance;
+
+		if (num_elements <= 1) {
+			// Nothing to do
+			return cudaSuccess;
+		}
 
 		ProblemInstance problem_instance(
 			problem_storage,

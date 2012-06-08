@@ -55,7 +55,7 @@ namespace util {
 	/**
 	 * Compiler read/write barrier
 	 */
-	__forceinline__ void _ReadWriteBarrier()
+	inline void _ReadWriteBarrier()
 	{
 		__sync_synchronize();
 	}
@@ -63,7 +63,7 @@ namespace util {
 	/**
 	 * Atomic exchange
 	 */
-	__forceinline__ long _InterlockedExchange(volatile int * const Target, const int Value)
+	inline long _InterlockedExchange(volatile int * const Target, const int Value)
 	{
 		// NOTE: __sync_lock_test_and_set would be an acquire barrier, so we force a full barrier
 		_ReadWriteBarrier();
@@ -73,7 +73,7 @@ namespace util {
 	/**
 	 * Pause instruction to prevent excess processor bus usage
 	 */
-	__forceinline__ void YieldProcessor()
+	inline void YieldProcessor()
 	{
 		asm volatile("pause\n": : :"memory");
 	}
@@ -84,7 +84,7 @@ namespace util {
 /**
  * Return when the specified spinlock has been acquired
  */
-__forceinline__ void Lock(volatile Spinlock *lock)
+inline void Lock(volatile Spinlock *lock)
 {
 	while (1) {
 		if (!_InterlockedExchange(lock, 1)) return;
@@ -96,7 +96,7 @@ __forceinline__ void Lock(volatile Spinlock *lock)
 /**
  * Release the specified spinlock
  */
-__forceinline__ void Unlock(volatile Spinlock *lock)
+inline void Unlock(volatile Spinlock *lock)
 {
 	_ReadWriteBarrier();
 	*lock = 0;
