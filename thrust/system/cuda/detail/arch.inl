@@ -96,6 +96,7 @@ inline void get_device_properties(device_properties_t &p, int device_id)
     properties.multiProcessorCount,
     properties.regsPerBlock,
     properties.sharedMemPerBlock,
+    properties.textureAlignment,
     properties.warpSize
   };
 

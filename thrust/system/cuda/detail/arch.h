@@ -52,6 +52,7 @@ struct device_properties_t
   int    multiProcessorCount;
   int    regsPerBlock;
   size_t sharedMemPerBlock;
+  size_t textureAlignment;
   int    warpSize;
 };
 
