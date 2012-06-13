@@ -59,7 +59,8 @@ void stable_radix_sort(RandomAccessIterator first,
     unsigned int num_elements = last - first;
 
     // ensure data is properly aligned
-    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first), 2*sizeof(K)))
+    const size_t texture_alignment = arch::device_properties().textureAlignment;
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first), texture_alignment))
     {
         thrust::detail::temporary_array<K, system> aligned_keys(first, last);
         stable_radix_sort(aligned_keys.begin(), aligned_keys.end());
@@ -113,14 +114,15 @@ void stable_radix_sort_by_key(RandomAccessIterator1 first1,
     unsigned int num_elements = last1 - first1;
 
     // ensure data is properly aligned
-    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first1), 2*sizeof(K)))
+    const size_t texture_alignment = arch::device_properties().textureAlignment;
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first1), texture_alignment))
     {
         thrust::detail::temporary_array<K,system> aligned_keys(first1, last1);
         stable_radix_sort_by_key(aligned_keys.begin(), aligned_keys.end(), first2);
         thrust::copy(aligned_keys.begin(), aligned_keys.end(), first1);
         return;
     }
-    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first2), 2*sizeof(V)))
+    if(!thrust::detail::util::is_aligned(thrust::raw_pointer_cast(&*first2), texture_alignment))
     {
         thrust::detail::temporary_array<V,system> aligned_values(first2, first2 + num_elements);
         stable_radix_sort_by_key(first1, last1, aligned_values.begin());
