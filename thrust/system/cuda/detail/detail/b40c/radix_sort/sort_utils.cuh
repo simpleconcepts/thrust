@@ -61,11 +61,12 @@ __device__ __forceinline__ unsigned int Extract(
 	T source,
 	unsigned int addend)
 {
-	const T MASK 		= ((1ull << NUM_BITS) - 1) << BIT_OFFSET;
-	const int SHIFT 	= LEFT_SHIFT - BIT_OFFSET;
+	const T MASK			= ((1ull << NUM_BITS) - 1) << BIT_OFFSET;
+	const int SHIFT	 		= LEFT_SHIFT - BIT_OFFSET;
+	const int BIT_LENGTH	= int(sizeof(int) * 8);
 
 	unsigned int bits = (source & MASK);
-	if (SHIFT == 0) {
+	if ((SHIFT == 0) || (SHIFT >= BIT_LENGTH) || (SHIFT * -1 >= BIT_LENGTH)) {
 		bits += addend;
 	} else if (SHIFT > 0) {
 		bits = util::SHL_ADD(bits, (unsigned int) (SHIFT), addend);
