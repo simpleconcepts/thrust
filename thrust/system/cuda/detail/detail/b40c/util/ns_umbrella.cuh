@@ -28,8 +28,8 @@
 //#define B40C_NS_PREFIX namespace thrust{ namespace detail {
 //#define B40C_NS_POSTFIX } }
 
-#define B40C_NS_PREFIX
-#define B40C_NS_POSTFIX
+#define B40C_NS_PREFIX  namespace __thrust_b40c{
+#define B40C_NS_POSTFIX }
 
 
 
@@ -38,6 +38,7 @@
  * versions
  ******************************************************************************/
 
+B40C_NS_PREFIX
 namespace b40c {
 
 #if CUDA_VERSION < 4200
@@ -62,3 +63,5 @@ inline cudaError_t cudaDeviceSetSharedMemConfig(enum cudaSharedMemConfig config)
 #endif
 
 } // namespace b40c
+B40C_NS_POSTFIX
+
