@@ -22,9 +22,48 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename RandomAccessIterator>
+  void scatter(const thrust::detail::dispatchable_base<System> &system,
+               InputIterator1 first,
+               InputIterator1 last,
+               InputIterator2 map,
+               RandomAccessIterator output);
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename RandomAccessIterator>
+  void scatter_if(const thrust::detail::dispatchable_base<System> &system,
+                  InputIterator1 first,
+                  InputIterator1 last,
+                  InputIterator2 map,
+                  InputIterator3 stencil,
+                  RandomAccessIterator output);
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename RandomAccessIterator,
+         typename Predicate>
+  void scatter_if(const thrust::detail::dispatchable_base<System> &system,
+                  InputIterator1 first,
+                  InputIterator1 last,
+                  InputIterator2 map,
+                  InputIterator3 stencil,
+                  RandomAccessIterator output,
+                  Predicate pred);
+
 
 /*! \addtogroup scattering
  *  \ingroup copying
@@ -41,7 +80,7 @@ namespace thrust
  *  \param first Beginning of the sequence of values to scatter.
  *  \param last End of the sequence of values to scatter.
  *  \param map  Beginning of the sequence of output indices.
- *  \param output Destination of the source elements.
+ *  \param result Destination of the source elements.
  *
  *  \tparam InputIterator1 must be a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a> and \c InputIterator1's \c value_type must be convertible to \c RandomAccessIterator's \c value_type.
  *  \tparam InputIterator2 must be a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a> and \c InputIterator2's \c value_type must be convertible to \c RandomAccessIterator's \c difference_type.
@@ -77,7 +116,7 @@ template<typename InputIterator1,
   void scatter(InputIterator1 first,
                InputIterator1 last,
                InputIterator2 map,
-               RandomAccessIterator output);
+               RandomAccessIterator result);
 
 
 /*! \p scatter_if conditionally copies elements from a source range into an 

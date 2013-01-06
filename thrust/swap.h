@@ -21,6 +21,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 // empty Doxygen comment below so namespace thrust's documentation will be extracted
 
@@ -71,6 +72,16 @@ inline void swap(Assignable1 &a, Assignable2 &b);
 /*! \} // utility
  */
 
+
+template<typename System,
+         typename ForwardIterator1,
+         typename ForwardIterator2>
+  ForwardIterator2 swap_ranges(const thrust::detail::dispatchable_base<System> &system,
+                               ForwardIterator1 first1,
+                               ForwardIterator1 last1,
+                               ForwardIterator2 first2);
+
+
 /*! \addtogroup copying
  *  \{
  */
@@ -91,6 +102,8 @@ inline void swap(Assignable1 &a, Assignable2 &b);
  *          and \p ForwardIterator1's \c value_type must be convertible to \p ForwardIterator2's \c value_type.
  *  \tparam ForwardIterator2 is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator.html">Forward Iterator</a>,
  *          and \p ForwardIterator2's \c value_type must be convertible to \p ForwardIterator1's \c value_type.
+ *
+ *  \pre \p first1 may equal \p first2, but the range <tt>[first1, last1)</tt> shall not overlap the range <tt>[first2, first2 + (last1 - first1))</tt> otherwise.
  *
  *  The following code snippet demonstrates how to use \p swap_ranges to
  *  swap the contents of two \c thrust::device_vectors.

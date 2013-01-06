@@ -17,6 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/system/cuda/detail/tag.h>
 
 namespace thrust
 {
@@ -29,22 +30,20 @@ namespace detail
 namespace detail
 {
 
-template<typename Tag,
+template<typename System,
          typename RandomAccessIterator1,
          typename RandomAccessIterator2,
          typename RandomAccessIterator3,
          typename Compare,
-         typename SplittingFunction,
-         typename BlockConvergentSetOperation>
-  RandomAccessIterator3 set_operation(Tag,
+         typename SetOperation>
+  RandomAccessIterator3 set_operation(dispatchable<System> &system,
                                       RandomAccessIterator1 first1,
                                       RandomAccessIterator1 last1,
                                       RandomAccessIterator2 first2,
                                       RandomAccessIterator2 last2,
                                       RandomAccessIterator3 result,
                                       Compare comp,
-                                      SplittingFunction split,
-                                      BlockConvergentSetOperation set_op);
+                                      SetOperation set_op);
 
 
 } // end detail

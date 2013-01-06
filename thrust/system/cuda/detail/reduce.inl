@@ -26,7 +26,7 @@
 #include <thrust/detail/temporary_array.h>
 #include <thrust/system/detail/generic/select_system.h>
 
-#include <thrust/system/cuda/detail/arch.h>
+#include <thrust/system/cuda/detail/runtime_introspection.h>
 #include <thrust/system/cuda/detail/extern_shared_ptr.h>
 #include <thrust/system/cuda/detail/block/reduce.h>
 #include <thrust/system/cuda/detail/detail/launch_closure.h>
@@ -152,11 +152,11 @@ struct unordered_reduce_closure
 
 __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_BEGIN
 
-template<typename Tag,
+template<typename System,
          typename InputIterator,
          typename OutputType,
          typename BinaryFunction>
-  OutputType reduce(Tag,
+  OutputType reduce(dispatchable<System> &system,
                     InputIterator first,
                     InputIterator last,
                     OutputType init,
@@ -176,18 +176,18 @@ template<typename Tag,
   if (n == 0)
     return init;
 
-  typedef thrust::detail::temporary_array<OutputType, Tag> OutputArray;
+  typedef thrust::detail::temporary_array<OutputType, System> OutputArray;
   typedef typename OutputArray::iterator OutputIterator;
 
   typedef detail::blocked_thread_array Context;
   typedef unordered_reduce_closure<InputIterator,difference_type,OutputType,OutputIterator,BinaryFunction,Context> Closure;
     
-  arch::function_attributes_t attributes = detail::closure_attributes<Closure>();
+  function_attributes_t attributes = detail::closure_attributes<Closure>();
   
   // TODO chose this in a more principled manner
   size_t threshold = thrust::max<size_t>(2 * attributes.maxThreadsPerBlock, 1024);
 
-  arch::device_properties_t properties = arch::device_properties();
+  device_properties_t properties = device_properties();
 
   // launch configuration
   size_t num_blocks; 
@@ -218,7 +218,7 @@ template<typename Tag,
   // TODO assert(n <= num_blocks * block_size);
   // TODO if (shared_array_size < 1) throw cuda exception "insufficient shared memory"
 
-  OutputArray output(num_blocks);
+  OutputArray output(system, num_blocks);
 
   Closure closure(first, n, init, output.begin(), binary_op, array_size);
   
@@ -232,7 +232,7 @@ template<typename Tag,
     typedef detail::blocked_thread_array Context;
     typedef unordered_reduce_closure<OutputIterator,difference_type,OutputType,OutputIterator,BinaryFunction,Context> Closure;
 
-    arch::function_attributes_t attributes = detail::closure_attributes<Closure>();
+    function_attributes_t attributes = detail::closure_attributes<Closure>();
 
     num_blocks = 1;
     block_size = thrust::min(output.size(), static_cast<size_t>(attributes.maxThreadsPerBlock));
@@ -255,21 +255,17 @@ template<typename Tag,
 
 __THRUST_DISABLE_MSVC_POSSIBLE_LOSS_OF_DATA_WARNING_END
 
-template<typename InputIterator,
+template<typename System,
+         typename InputIterator,
          typename OutputType,
          typename BinaryFunction>
-  OutputType reduce(tag,
+  OutputType reduce(dispatchable<System> &system,
                     InputIterator first,
                     InputIterator last,
                     OutputType init,
                     BinaryFunction binary_op)
 {
-  // recover the user's system tag and pass to reduce_detail::reduce
-  using thrust::system::detail::generic::select_system;
-
-  typedef typename thrust::iterator_system<InputIterator>::type system;
-
-  return reduce_detail::reduce(select_system(system()), first, last, init, binary_op);
+  return reduce_detail::reduce(system, first, last, init, binary_op);
 } // end reduce()
 
 } // end namespace detail

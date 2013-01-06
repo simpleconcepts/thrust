@@ -22,9 +22,39 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename UnaryFunction,
+         typename AssociativeOperator>
+  OutputIterator transform_inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                          InputIterator first,
+                                          InputIterator last,
+                                          OutputIterator result,
+                                          UnaryFunction unary_op,
+                                          AssociativeOperator binary_op);
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename UnaryFunction,
+         typename T,
+         typename AssociativeOperator>
+  OutputIterator transform_exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                          InputIterator first,
+                                          InputIterator last,
+                                          OutputIterator result,
+                                          UnaryFunction unary_op,
+                                          T init,
+                                          AssociativeOperator binary_op);
+
 
 /*! \addtogroup algorithms
  */
@@ -46,9 +76,9 @@ namespace thrust
  *  performing an \p inclusive_scan on the tranformed sequence.  In most
  *  cases, fusing these two operations together is more efficient, since
  *  fewer memory reads and writes are required. In \p transform_inclusive_scan,
- *  <tt>unary_op(*first)</tt> is assigned to <tt>*result</tt> and the result
- *  of <tt>binary_op(unary_op(*first), unary_op(*(first + 1)))</tt> is
- *  assigned to <tt>*(result + 1)</tt>, and so on.  The transform scan
+ *  <tt>unary_op(\*first)</tt> is assigned to <tt>\*result</tt> and the result
+ *  of <tt>binary_op(unary_op(\*first), unary_op(\*(first + 1)))</tt> is
+ *  assigned to <tt>\*(result + 1)</tt>, and so on.  The transform scan
  *  operation is permitted to be in-place.
  *
  *  \param first The beginning of the input sequence.
@@ -67,6 +97,8 @@ namespace thrust
  *  \tparam AssociativeOperator is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                              and \c AssociativeOperator's \c result_type is
  *                              convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result, but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform_inclusive_scan
  *
@@ -104,9 +136,9 @@ template<typename InputIterator,
  *  performing an \p exclusive_scan on the tranformed sequence.  In most
  *  cases, fusing these two operations together is more efficient, since
  *  fewer memory reads and writes are required. In 
- *  \p transform_exclusive_scan, \p init is assigned to <tt>*result</tt> 
- *  and the result of <tt>binary_op(init, unary_op(*first))</tt> is assigned
- *  to <tt>*(result + 1)</tt>, and so on.  The transform scan operation is 
+ *  \p transform_exclusive_scan, \p init is assigned to <tt>\*result</tt> 
+ *  and the result of <tt>binary_op(init, unary_op(\*first))</tt> is assigned
+ *  to <tt>\*(result + 1)</tt>, and so on.  The transform scan operation is 
  *  permitted to be in-place.
  *
  *  \param first The beginning of the input sequence.
@@ -127,6 +159,8 @@ template<typename InputIterator,
  *  \tparam AssociativeOperator is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                              and \c AssociativeOperator's \c result_type is
  *                              convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result, but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform_exclusive_scan
  *

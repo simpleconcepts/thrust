@@ -28,6 +28,29 @@
 namespace thrust
 {
 
+
+template<typename System, typename ForwardIterator, typename T>
+  void uninitialized_fill(const thrust::detail::dispatchable_base<System> &system,
+                          ForwardIterator first,
+                          ForwardIterator last,
+                          const T &x)
+{
+  using thrust::system::detail::generic::uninitialized_fill;
+  return uninitialized_fill(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, x);
+} // end uninitialized_fill()
+
+
+template<typename System, typename ForwardIterator, typename Size, typename T>
+  ForwardIterator uninitialized_fill_n(const thrust::detail::dispatchable_base<System> &system,
+                                       ForwardIterator first,
+                                       Size n,
+                                       const T &x)
+{
+  using thrust::system::detail::generic::uninitialized_fill_n;
+  return uninitialized_fill_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, x);
+} // end uninitialized_fill_n()
+
+
 template<typename ForwardIterator,
          typename T>
   void uninitialized_fill(ForwardIterator first,
@@ -35,12 +58,14 @@ template<typename ForwardIterator,
                           const T &x)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::uninitialized_fill;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  uninitialized_fill(select_system(system()), first, last, x);
+  System system;
+
+  thrust::uninitialized_fill(select_system(system), first, last, x);
 } // end uninitialized_fill()
+
 
 template<typename ForwardIterator,
          typename Size,
@@ -50,12 +75,14 @@ template<typename ForwardIterator,
                                        const T &x)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::uninitialized_fill_n;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return uninitialized_fill_n(select_system(system()), first, n, x);
+  System system;
+
+  return thrust::uninitialized_fill_n(select_system(system), first, n, x);
 } // end uninitialized_fill_n()
+
 
 } // end thrust
 

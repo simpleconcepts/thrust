@@ -22,9 +22,50 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename InputIterator,
+         typename RandomAccessIterator,
+         typename OutputIterator>
+  OutputIterator gather(const thrust::detail::dispatchable_base<System> &system,
+                        InputIterator                                    map_first,
+                        InputIterator                                    map_last,
+                        RandomAccessIterator                             input_first,
+                        OutputIterator                                   result);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename RandomAccessIterator,
+         typename OutputIterator>
+  OutputIterator gather_if(const thrust::detail::dispatchable_base<System> &system,
+                           InputIterator1                                   map_first,
+                           InputIterator1                                   map_last,
+                           InputIterator2                                   stencil,
+                           RandomAccessIterator                             input_first,
+                           OutputIterator                                   result);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename RandomAccessIterator,
+         typename OutputIterator,
+         typename Predicate>
+  OutputIterator gather_if(const thrust::detail::dispatchable_base<System> &system,
+                           InputIterator1                                   map_first,
+                           InputIterator1                                   map_last,
+                           InputIterator2                                   stencil,
+                           RandomAccessIterator                             input_first,
+                           OutputIterator                                   result,
+                           Predicate                                        pred);
+
 
 /*! \addtogroup gathering
  *  \ingroup copying
@@ -33,7 +74,7 @@ namespace thrust
 
 /*! \p gather copies elements from a source array into a destination range according 
  *  to a map. For each input iterator \c i in the range <tt>[map_first, map_last)</tt>, the
- *  value <tt>input_first[*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
+ *  value <tt>input_first[\*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
  *  \p RandomAccessIterator must permit random access.
  *
  *  \param map_first Beginning of the range of gather locations.
@@ -44,6 +85,10 @@ namespace thrust
  *  \tparam InputIterator must be a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a> and \c InputIterator's \c value_type must be convertible to \c RandomAccessIterator's \c difference_type.
  *  \tparam RandomAccessIterator must be a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.html">Random Access Iterator</a> and \c RandomAccessIterator's \c value_type must be convertible to \c OutputIterator's \c value_type.
  *  \tparam OutputIterator must be a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
+ *
+ *  \pre The range <tt>[map_first, map_last)</tt> shall not overlap the range <tt>[result, result + (map_last - map_first))</tt>.
+ *
+ *  \remark \p gather is the inverse of thrust::scatter.
  *
  *  The following code snippet demonstrates how to use \p gather to reorder
  *  a range.
@@ -67,8 +112,6 @@ namespace thrust
  *                 d_output.begin());
  *  // d_output is now {1, 1, 1, 1, 1, 0, 0, 0, 0, 0}
  *  \endcode
- *
- *  \note \p gather is the inverse of thrust::scatter.
  */
 template<typename InputIterator,
          typename RandomAccessIterator,
@@ -81,8 +124,8 @@ template<typename InputIterator,
 
 /*! \p gather_if conditionally copies elements from a source array into a destination 
  *  range according to a map. For each input iterator \c i in the range <tt>[map_first, map_last)</tt>,
- *  such that the value of <tt>*(stencil + (i - map_first))</tt> is \c true, the value
- *  <tt>input_first[*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
+ *  such that the value of <tt>\*(stencil + (i - map_first))</tt> is \c true, the value
+ *  <tt>input_first[\*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
  *  \p RandomAccessIterator must permit random access.
  *
  *  \param map_first Beginning of the range of gather locations.
@@ -95,6 +138,11 @@ template<typename InputIterator,
  *  \tparam InputIterator2 must be a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a> and \c InputIterator2's \c value_type must be convertible to \c bool.
  *  \tparam RandomAccessIterator must be a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.html">Random Access iterator</a> and \c RandomAccessIterator's \c value_type must be convertible to \c OutputIterator's \c value_type.
  *  \tparam OutputIterator must be a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
+ *
+ *  \pre The range <tt>[map_first, map_last)</tt> shall not overlap the range <tt>[result, result + (map_last - map_first))</tt>.
+ *  \pre The range <tt>[stencil, stencil + (map_last - map_first))</tt> shall not overlap the range <tt>[result, result + (map_last - map_first))</tt>.
+ *
+ *  \remark \p gather_if is the inverse of \p scatter_if.
  *
  *  The following code snippet demonstrates how to use \p gather_if to gather selected values from
  *  an input range.
@@ -123,8 +171,6 @@ template<typename InputIterator,
  *                    d_output.begin());
  *  // d_output is now {0, 2, 4, 6, 8, 7, 7, 7, 7, 7}
  *  \endcode
- *
- *  \note \p gather_if is the inverse of \p scatter_if.
  */
 template<typename InputIterator1,
          typename InputIterator2,
@@ -139,8 +185,8 @@ template<typename InputIterator1,
 
 /*! \p gather_if conditionally copies elements from a source array into a destination 
  *  range according to a map. For each input iterator \c i in the range <tt>[map_first, map_last)</tt>
- *  such that the value of <tt>pred(*(stencil + (i - map_first)))</tt> is \c true,
- *  the value <tt>input_first[*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
+ *  such that the value of <tt>pred(\*(stencil + (i - map_first)))</tt> is \c true,
+ *  the value <tt>input_first[\*i]</tt> is assigned to <tt>*(result + (i - map_first))</tt>.
  *  \p RandomAccessIterator must permit random access.
  *
  *  \param map_first Beginning of the range of gather locations.
@@ -155,6 +201,11 @@ template<typename InputIterator1,
  *  \tparam RandomAccessIterator must be a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.html">Random Access iterator</a> and \c RandomAccessIterator's \c value_type must be convertible to \c OutputIterator's \c value_type.
  *  \tparam OutputIterator must be a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam Predicate must be a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
+ *
+ *  \pre The range <tt>[map_first, map_last)</tt> shall not overlap the range <tt>[result, result + (map_last - map_first))</tt>.
+ *  \pre The range <tt>[stencil, stencil + (map_last - map_first))</tt> shall not overlap the range <tt>[result, result + (map_last - map_first))</tt>.
+ *
+ *  \remark \p gather_if is the inverse of \p scatter_if.
  *
  *  The following code snippet demonstrates how to use \p gather_if to gather selected values from
  *  an input range based on an arbitrary selection function.
@@ -193,8 +244,6 @@ template<typename InputIterator1,
  *                    is_even());
  *  // d_output is now {0, 7, 4, 7, 8, 7, 3, 7, 7, 7}
  *  \endcode
- *
- *  \note \p gather_if is the inverse of \p scatter_if.
  */
 template<typename InputIterator1,
          typename InputIterator2,
@@ -211,7 +260,7 @@ template<typename InputIterator1,
 /*! \} // gathering
  */
 
-}; // end namespace thrust
+} // end namespace thrust
 
 #include <thrust/detail/gather.inl>
 

@@ -26,15 +26,64 @@ namespace thrust
 {
 
 
+template<typename System, typename ForwardIterator>
+ForwardIterator min_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last)
+{
+  using thrust::system::detail::generic::min_element;
+  return min_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end min_element()
+
+
+template<typename System, typename ForwardIterator, typename BinaryPredicate>
+ForwardIterator min_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last, BinaryPredicate comp)
+{
+  using thrust::system::detail::generic::min_element;
+  return min_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end min_element()
+
+
+template<typename System, typename ForwardIterator>
+ForwardIterator max_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last)
+{
+  using thrust::system::detail::generic::max_element;
+  return max_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end max_element()
+
+
+template<typename System, typename ForwardIterator, typename BinaryPredicate>
+ForwardIterator max_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last, BinaryPredicate comp)
+{
+  using thrust::system::detail::generic::max_element;
+  return max_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end max_element()
+
+
+template<typename System, typename ForwardIterator>
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last)
+{
+  using thrust::system::detail::generic::minmax_element;
+  return minmax_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end minmax_element()
+
+
+template<typename System, typename ForwardIterator, typename BinaryPredicate>
+thrust::pair<ForwardIterator,ForwardIterator> minmax_element(const thrust::detail::dispatchable_base<System> &system, ForwardIterator first, ForwardIterator last, BinaryPredicate comp)
+{
+  using thrust::system::detail::generic::minmax_element;
+  return minmax_element(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end minmax_element()
+
+
 template <typename ForwardIterator>
 ForwardIterator min_element(ForwardIterator first, ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::min_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return min_element(select_system(system()), first, last);
+  System system;
+
+  return thrust::min_element(select_system(system), first, last);
 } // end min_element()
 
 
@@ -43,11 +92,12 @@ ForwardIterator min_element(ForwardIterator first, ForwardIterator last,
                             BinaryPredicate comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::min_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return min_element(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::min_element(select_system(system), first, last, comp);
 } // end min_element()
 
 
@@ -55,11 +105,12 @@ template <typename ForwardIterator>
 ForwardIterator max_element(ForwardIterator first, ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::max_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return max_element(select_system(system()), first, last);
+  System system;
+
+  return thrust::max_element(select_system(system), first, last);
 } // end max_element()
 
 
@@ -68,11 +119,12 @@ ForwardIterator max_element(ForwardIterator first, ForwardIterator last,
                             BinaryPredicate comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::max_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return max_element(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::max_element(select_system(system), first, last, comp);
 } // end max_element()
 
 
@@ -81,11 +133,12 @@ thrust::pair<ForwardIterator,ForwardIterator>
 minmax_element(ForwardIterator first, ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::minmax_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return minmax_element(select_system(system()), first, last);
+  System system;
+
+  return thrust::minmax_element(select_system(system), first, last);
 } // end minmax_element()
 
 
@@ -94,11 +147,12 @@ thrust::pair<ForwardIterator,ForwardIterator>
 minmax_element(ForwardIterator first, ForwardIterator last, BinaryPredicate comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::minmax_element;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return minmax_element(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::minmax_element(select_system(system), first, last, comp);
 } // end minmax_element()
 
 

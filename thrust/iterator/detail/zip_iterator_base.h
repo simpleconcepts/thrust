@@ -84,6 +84,8 @@ struct dereference_iterator
     type;
   }; // end apply
 
+  // XXX silence warnings of the form "calling a __host__ function from a __host__ __device__ function is not allowed
+  __thrust_hd_warning_disable__
   template<typename Iterator>
   __host__ __device__
     typename apply<Iterator>::type operator()(Iterator const& it)
@@ -182,7 +184,7 @@ struct tuple_meta_accumulate
 //
 template<typename Fun, typename System>
 inline __host__ __device__
-Fun tuple_for_each(thrust::null_type, Fun f, System)
+Fun tuple_for_each(thrust::null_type, Fun f, System *)
 {
   return f;
 } // end tuple_for_each()
@@ -190,7 +192,7 @@ Fun tuple_for_each(thrust::null_type, Fun f, System)
 
 template<typename Tuple, typename Fun, typename System>
 inline __host__ __device__
-Fun tuple_for_each(Tuple& t, Fun f, System dispatch_tag)
+Fun tuple_for_each(Tuple& t, Fun f, System *dispatch_tag)
 { 
   f( t.get_head() );
   return tuple_for_each(t.get_tail(), f, dispatch_tag);
@@ -199,7 +201,7 @@ Fun tuple_for_each(Tuple& t, Fun f, System dispatch_tag)
 
 template<typename Tuple, typename Fun>
 inline __host__ __device__
-Fun tuple_for_each(Tuple& t, Fun f, thrust::host_system_tag dispatch_tag)
+Fun tuple_for_each(Tuple& t, Fun f, thrust::host_system_tag *dispatch_tag)
 { 
 // XXX this path is required in order to accomodate pure host iterators
 //     (such as std::vector::iterator) in a zip_iterator
@@ -380,10 +382,6 @@ template<typename IteratorTuple>
     //typedef reference value_type;
     typedef typename tuple_of_value_types<IteratorTuple>::type value_type;
 
-    // Boost's Pointer type is just value_type *
-    //typedef value_type * pointer;
-    typedef reference * pointer;
-
     // Difference type is the first iterator's difference type
     typedef typename thrust::iterator_traits<
       typename thrust::tuple_element<0, IteratorTuple>::type
@@ -403,9 +401,8 @@ template<typename IteratorTuple>
   
     // The iterator facade type from which the zip iterator will
     // be derived.
-    typedef experimental::iterator_facade<
+    typedef thrust::iterator_facade<
         zip_iterator<IteratorTuple>,
-        pointer,
         value_type,  
         system,
         traversal_category,

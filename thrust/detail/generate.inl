@@ -29,6 +29,34 @@
 namespace thrust
 {
 
+
+template<typename System,
+         typename ForwardIterator,
+         typename Generator>
+  void generate(const thrust::detail::dispatchable_base<System> &system,
+                ForwardIterator first,
+                ForwardIterator last,
+                Generator gen)
+{
+  using thrust::system::detail::generic::generate;
+  return generate(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, gen);
+} // end generate()
+
+
+template<typename System,
+         typename OutputIterator,
+         typename Size,
+         typename Generator>
+  OutputIterator generate_n(const thrust::detail::dispatchable_base<System> &system,
+                            OutputIterator first,
+                            Size n,
+                            Generator gen)
+{
+  using thrust::system::detail::generic::generate_n;
+  return generate_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, gen);
+} // end generate_n()
+
+
 template<typename ForwardIterator,
          typename Generator>
   void generate(ForwardIterator first,
@@ -36,11 +64,12 @@ template<typename ForwardIterator,
                 Generator gen)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::generate;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type type;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return generate(select_system(type()), first, last, gen);
+  System system;
+
+  return thrust::generate(select_system(system), first, last, gen);
 } // end generate()
 
 
@@ -52,12 +81,14 @@ template<typename OutputIterator,
                             Generator gen)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::generate_n;
 
-  typedef typename thrust::iterator_system<OutputIterator>::type type;
+  typedef typename thrust::iterator_system<OutputIterator>::type System;
 
-  return generate_n(select_system(type()), first, n, gen);
+  System system;
+
+  return thrust::generate_n(select_system(system), first, n, gen);
 } // end generate_n()
+
 
 } // end thrust
 

@@ -28,18 +28,38 @@
 namespace thrust
 {
 
+
+template<typename System, typename InputIterator1, typename InputIterator2>
+bool equal(const thrust::detail::dispatchable_base<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+{
+  using thrust::system::detail::generic::equal;
+  return equal(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2);
+} // end equal()
+
+
+template<typename System, typename InputIterator1, typename InputIterator2, typename BinaryPredicate>
+bool equal(const thrust::detail::dispatchable_base<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, BinaryPredicate binary_pred)
+{
+  using thrust::system::detail::generic::equal;
+  return equal(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first1, last1, first2, binary_pred);
+} // end equal()
+
+
 template <typename InputIterator1, typename InputIterator2>
 bool equal(InputIterator1 first1, InputIterator1 last1,
            InputIterator2 first2)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::equal;
 
-  typedef typename thrust::iterator_system<InputIterator1>::type system1;
-  typedef typename thrust::iterator_system<InputIterator2>::type system2;
+  typedef typename thrust::iterator_system<InputIterator1>::type System1;
+  typedef typename thrust::iterator_system<InputIterator2>::type System2;
 
-  return equal(select_system(system1(),system2()), first1, last1, first2);
+  System1 system1;
+  System2 system2;
+
+  return thrust::equal(select_system(system1,system2), first1, last1, first2);
 }
+
 
 template <typename InputIterator1, typename InputIterator2, 
           typename BinaryPredicate>
@@ -47,13 +67,16 @@ bool equal(InputIterator1 first1, InputIterator1 last1,
            InputIterator2 first2, BinaryPredicate binary_pred)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::equal;
 
-  typedef typename thrust::iterator_system<InputIterator1>::type system1;
-  typedef typename thrust::iterator_system<InputIterator2>::type system2;
+  typedef typename thrust::iterator_system<InputIterator1>::type System1;
+  typedef typename thrust::iterator_system<InputIterator2>::type System2;
 
-  return equal(select_system(system1(),system2()), first1, last1, first2, binary_pred);
+  System1 system1;
+  System2 system2;
+
+  return thrust::equal(select_system(system1,system2), first1, last1, first2, binary_pred);
 }
+
 
 } // end namespace thrust
 

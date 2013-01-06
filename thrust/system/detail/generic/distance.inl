@@ -55,7 +55,7 @@ template<typename InputIterator>
 
 template<typename InputIterator>
   inline typename thrust::iterator_traits<InputIterator>::difference_type
-    distance(tag, InputIterator first, InputIterator last)
+    distance(InputIterator first, InputIterator last)
 {
   // dispatch on iterator traversal
   return thrust::system::detail::generic::detail::distance(first, last,

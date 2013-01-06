@@ -96,10 +96,11 @@ struct body
 } // end reduce_detail
 
 
-template<typename InputIterator, 
+template<typename System,
+         typename InputIterator, 
          typename OutputType,
          typename BinaryFunction>
-  OutputType reduce(tag,
+  OutputType reduce(dispatchable<System> &system,
                     InputIterator begin,
                     InputIterator end,
                     OutputType init,

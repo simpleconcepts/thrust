@@ -29,6 +29,151 @@
 namespace thrust
 {
 
+
+template<typename System, typename RandomAccessIterator>
+  void sort(const thrust::detail::dispatchable_base<System> &system,
+            RandomAccessIterator first,
+            RandomAccessIterator last)
+{
+  using thrust::system::detail::generic::sort;
+  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end sort()
+
+
+template<typename System,
+         typename RandomAccessIterator,
+         typename StrictWeakOrdering>
+  void sort(const thrust::detail::dispatchable_base<System> &system,
+            RandomAccessIterator first,
+            RandomAccessIterator last,
+            StrictWeakOrdering comp)
+{
+  using thrust::system::detail::generic::sort;
+  return sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end sort()
+
+
+template<typename System, typename RandomAccessIterator>
+  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator first,
+                   RandomAccessIterator last)
+{
+  using thrust::system::detail::generic::stable_sort;
+  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end stable_sort()
+
+
+template<typename System,
+         typename RandomAccessIterator,
+         typename StrictWeakOrdering>
+  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator first,
+                   RandomAccessIterator last,
+                   StrictWeakOrdering comp)
+{
+  using thrust::system::detail::generic::stable_sort;
+  return stable_sort(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end stable_sort()
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator1 keys_first,
+                   RandomAccessIterator1 keys_last,
+                   RandomAccessIterator2 values_first)
+{
+  using thrust::system::detail::generic::sort_by_key;
+  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first);
+} // end sort_by_key()
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2,
+         typename StrictWeakOrdering>
+  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator1 keys_first,
+                   RandomAccessIterator1 keys_last,
+                   RandomAccessIterator2 values_first,
+                   StrictWeakOrdering comp)
+{
+  using thrust::system::detail::generic::sort_by_key;
+  return sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first, comp);
+} // end sort_by_key()
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                          RandomAccessIterator1 keys_first,
+                          RandomAccessIterator1 keys_last,
+                          RandomAccessIterator2 values_first)
+{
+  using thrust::system::detail::generic::stable_sort_by_key;
+  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first);
+} // end stable_sort_by_key()
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2,
+         typename StrictWeakOrdering>
+  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                          RandomAccessIterator1 keys_first,
+                          RandomAccessIterator1 keys_last,
+                          RandomAccessIterator2 values_first,
+                          StrictWeakOrdering comp)
+{
+  using thrust::system::detail::generic::stable_sort_by_key;
+  return stable_sort_by_key(thrust::detail::derived_cast(thrust::detail::strip_const(system)), keys_first, keys_last, values_first, comp);
+} // end stable_sort_by_key()
+
+
+template<typename System, typename ForwardIterator>
+  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+                 ForwardIterator first,
+                 ForwardIterator last)
+{
+  using thrust::system::detail::generic::is_sorted;
+  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end is_sorted()
+
+
+template<typename System, typename ForwardIterator, typename Compare>
+  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+                 ForwardIterator first,
+                 ForwardIterator last,
+                 Compare comp)
+{
+  using thrust::system::detail::generic::is_sorted;
+  return is_sorted(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end is_sorted()
+
+
+template<typename System, typename ForwardIterator>
+  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+                                  ForwardIterator first,
+                                  ForwardIterator last)
+{
+  using thrust::system::detail::generic::is_sorted_until;
+  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end is_sorted_until()
+
+
+template<typename System, typename ForwardIterator, typename Compare>
+  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+                                  ForwardIterator first,
+                                  ForwardIterator last,
+                                  Compare comp)
+{
+  using thrust::system::detail::generic::is_sorted_until;
+  return is_sorted_until(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, comp);
+} // end is_sorted_until()
+
+
 ///////////////
 // Key Sorts //
 ///////////////
@@ -38,11 +183,12 @@ template<typename RandomAccessIterator>
             RandomAccessIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sort;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator>::type system;
+  typedef typename thrust::iterator_system<RandomAccessIterator>::type System;
 
-  return sort(select_system(system()), first, last);
+  System system;
+
+  return thrust::sort(select_system(system), first, last);
 } // end sort()
 
 
@@ -53,11 +199,12 @@ template<typename RandomAccessIterator,
             StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sort;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator>::type system;
+  typedef typename thrust::iterator_system<RandomAccessIterator>::type System;
 
-  return sort(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::sort(select_system(system), first, last, comp);
 } // end sort()
 
 
@@ -66,11 +213,12 @@ template<typename RandomAccessIterator>
                    RandomAccessIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::stable_sort;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator>::type system;
+  typedef typename thrust::iterator_system<RandomAccessIterator>::type System;
 
-  return stable_sort(select_system(system()), first, last);
+  System system;
+
+  return thrust::stable_sort(select_system(system), first, last);
 } // end stable_sort() 
 
 
@@ -81,11 +229,12 @@ template<typename RandomAccessIterator,
                    StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::stable_sort;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator>::type system;
+  typedef typename thrust::iterator_system<RandomAccessIterator>::type System;
 
-  return stable_sort(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::stable_sort(select_system(system), first, last, comp);
 } // end stable_sort()
 
 
@@ -101,12 +250,14 @@ template<typename RandomAccessIterator1,
                    RandomAccessIterator2 values_first)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sort_by_key;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator1>::type system1;
-  typedef typename thrust::iterator_system<RandomAccessIterator2>::type system2;
+  typedef typename thrust::iterator_system<RandomAccessIterator1>::type System1;
+  typedef typename thrust::iterator_system<RandomAccessIterator2>::type System2;
 
-  return sort_by_key(select_system(system1(),system2()), keys_first, keys_last, values_first);
+  System1 system1;
+  System2 system2;
+
+  return thrust::sort_by_key(select_system(system1,system2), keys_first, keys_last, values_first);
 } // end sort_by_key()
 
 
@@ -119,12 +270,14 @@ template<typename RandomAccessIterator1,
                    StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sort_by_key;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator1>::type system1;
-  typedef typename thrust::iterator_system<RandomAccessIterator2>::type system2;
+  typedef typename thrust::iterator_system<RandomAccessIterator1>::type System1;
+  typedef typename thrust::iterator_system<RandomAccessIterator2>::type System2;
 
-  return sort_by_key(select_system(system1(),system2()), keys_first, keys_last, values_first, comp);
+  System1 system1;
+  System2 system2;
+
+  return thrust::sort_by_key(select_system(system1,system2), keys_first, keys_last, values_first, comp);
 } // end sort_by_key()
 
 
@@ -135,12 +288,14 @@ template<typename RandomAccessIterator1,
                           RandomAccessIterator2 values_first)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::stable_sort_by_key;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator1>::type system1;
-  typedef typename thrust::iterator_system<RandomAccessIterator2>::type system2;
+  typedef typename thrust::iterator_system<RandomAccessIterator1>::type System1;
+  typedef typename thrust::iterator_system<RandomAccessIterator2>::type System2;
 
-  return stable_sort_by_key(select_system(system1(),system2()), keys_first, keys_last, values_first);
+  System1 system1;
+  System2 system2;
+
+  return thrust::stable_sort_by_key(select_system(system1,system2), keys_first, keys_last, values_first);
 } // end stable_sort_by_key()
 
 
@@ -153,12 +308,14 @@ template<typename RandomAccessIterator1,
                           StrictWeakOrdering comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::stable_sort_by_key;
 
-  typedef typename thrust::iterator_system<RandomAccessIterator1>::type system1;
-  typedef typename thrust::iterator_system<RandomAccessIterator2>::type system2;
+  typedef typename thrust::iterator_system<RandomAccessIterator1>::type System1;
+  typedef typename thrust::iterator_system<RandomAccessIterator2>::type System2;
 
-  return stable_sort_by_key(select_system(system1(),system2()), keys_first, keys_last, values_first, comp);
+  System1 system1;
+  System2 system2;
+
+  return thrust::stable_sort_by_key(select_system(system1,system2), keys_first, keys_last, values_first, comp);
 } // end stable_sort_by_key()
 
 
@@ -167,11 +324,12 @@ template<typename ForwardIterator>
                  ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::is_sorted;
   
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return is_sorted(select_system(system()), first, last);
+  System system;
+
+  return thrust::is_sorted(select_system(system), first, last);
 } // end is_sorted()
 
 
@@ -182,11 +340,12 @@ template<typename ForwardIterator,
                  Compare comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::is_sorted;
   
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return is_sorted(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::is_sorted(select_system(system), first, last, comp);
 } // end is_sorted()
 
 
@@ -195,11 +354,12 @@ template<typename ForwardIterator>
                                   ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::is_sorted_until;
   
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return is_sorted_until(select_system(system()), first, last);
+  System system;
+
+  return thrust::is_sorted_until(select_system(system), first, last);
 } // end is_sorted_until()
 
 
@@ -210,11 +370,12 @@ template<typename ForwardIterator,
                                   Compare comp)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::is_sorted_until;
   
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return is_sorted_until(select_system(system()), first, last, comp);
+  System system;
+
+  return thrust::is_sorted_until(select_system(system), first, last, comp);
 } // end is_sorted_until()
 
 

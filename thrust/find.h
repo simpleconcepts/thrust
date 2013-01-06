@@ -22,9 +22,32 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename InputIterator, typename T>
+InputIterator find(const thrust::detail::dispatchable_base<System> &system,
+                   InputIterator first,
+                   InputIterator last,
+                   const T& value);
+
+
+template<typename System, typename InputIterator, typename Predicate>
+InputIterator find_if(const thrust::detail::dispatchable_base<System> &system,
+                      InputIterator first,
+                      InputIterator last,
+                      Predicate pred);
+
+
+template<typename System, typename InputIterator, typename Predicate>
+InputIterator find_if_not(const thrust::detail::dispatchable_base<System> &system,
+                          InputIterator first,
+                          InputIterator last,
+                          Predicate pred);
+
 
 /*! \addtogroup algorithms
  */
@@ -93,18 +116,20 @@ InputIterator find(InputIterator first,
  *
  *  struct greater_than_four
  *  {
- *      bool operator()(int x)
- *      {
- *          return x > 4;
- *      }
+ *    __host__ __device__
+ *    bool operator()(int x)
+ *    {
+ *      return x > 4;
+ *    }
  *  };
  *
  *  struct greater_than_ten
  *  {
- *      bool operator()(int x)
- *      {
- *          return x > 10;
- *      }
+ *    __host__ __device__
+ *    bool operator()(int x)
+ *    {
+ *      return x > 10;
+ *    }
  *  };
  *
  *  ...
@@ -149,18 +174,20 @@ InputIterator find_if(InputIterator first,
  *
  *  struct greater_than_four
  *  {
- *      bool operator()(int x)
- *      {
- *          return x > 4;
- *      }
+ *    __host__ __device__
+ *    bool operator()(int x)
+ *    {
+ *      return x > 4;
+ *    }
  *  };
  *
  *  struct greater_than_ten
  *  {
- *      bool operator()(int x)
- *      {
- *          return x > 10;
- *      }
+ *    __host__ __device__
+ *    bool operator()(int x)
+ *    {
+ *      return x > 10;
+ *    }
  *  };
  *
  *  ...

@@ -69,30 +69,24 @@ void swap(reference<T> a, reference<T> b)
 
 pointer<void> malloc(std::size_t n)
 {
-  return pointer<void>(thrust::system::cpp::detail::malloc(tag(), n));
+  tag t;
+  return pointer<void>(thrust::system::cpp::detail::malloc(t, n));
+} // end malloc()
+
+template<typename T>
+pointer<T> malloc(std::size_t n)
+{
+  pointer<void> raw_ptr = thrust::system::cpp::malloc(sizeof(T) * n);
+  return pointer<T>(reinterpret_cast<T*>(raw_ptr.get()));
 } // end malloc()
 
 void free(pointer<void> ptr)
 {
-  return thrust::system::cpp::detail::free(tag(), ptr);
+  tag t;
+  return thrust::system::cpp::detail::free(t, ptr);
 } // end free()
 
 } // end cpp
 } // end system
-
-namespace detail
-{
-
-// XXX iterator_facade tries to instantiate the Reference
-//     type when computing the answer to is_convertible<Reference,Value>
-//     we can't do that at that point because reference
-//     is not complete
-//     WAR the problem by specializing is_convertible
-template<typename T>
-  struct is_convertible<thrust::cpp::reference<T>, T>
-    : thrust::detail::true_type
-{};
-
-} // end detail
 } // end thrust
 

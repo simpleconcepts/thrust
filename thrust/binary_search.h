@@ -22,10 +22,130 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 #include <thrust/pair.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename ForwardIterator, typename LessThanComparable>
+ForwardIterator lower_bound(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            const LessThanComparable &value);
+
+
+template<typename System, typename ForwardIterator, typename T, typename StrictWeakOrdering>
+ForwardIterator lower_bound(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            const T &value,
+                            StrictWeakOrdering comp);
+
+
+template<typename System, typename ForwardIterator, typename LessThanComparable>
+ForwardIterator upper_bound(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            const LessThanComparable &value);
+
+
+template<typename System, typename ForwardIterator, typename T, typename StrictWeakOrdering>
+ForwardIterator upper_bound(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            const T &value,
+                            StrictWeakOrdering comp);
+
+
+template <typename System, typename ForwardIterator, typename LessThanComparable>
+bool binary_search(const thrust::detail::dispatchable_base<System> &system,
+                   ForwardIterator first, 
+                   ForwardIterator last,
+                   const LessThanComparable& value);
+
+
+template <typename System, typename ForwardIterator, typename T, typename StrictWeakOrdering>
+bool binary_search(const thrust::detail::dispatchable_base<System> &system,
+                   ForwardIterator first,
+                   ForwardIterator last,
+                   const T& value, 
+                   StrictWeakOrdering comp);
+
+
+template <typename System, typename ForwardIterator, typename T, typename StrictWeakOrdering>
+thrust::pair<ForwardIterator, ForwardIterator>
+equal_range(const thrust::detail::dispatchable_base<System> &system,
+            ForwardIterator first,
+            ForwardIterator last,
+            const T& value,
+            StrictWeakOrdering comp);
+
+
+template <typename System, typename ForwardIterator, typename LessThanComparable>
+thrust::pair<ForwardIterator, ForwardIterator>
+equal_range(const thrust::detail::dispatchable_base<System> &system,
+            ForwardIterator first,
+            ForwardIterator last,
+            const LessThanComparable& value);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator>
+OutputIterator lower_bound(const thrust::detail::dispatchable_base<System> &system,
+                           ForwardIterator first, 
+                           ForwardIterator last,
+                           InputIterator values_first, 
+                           InputIterator values_last,
+                           OutputIterator output);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator, typename StrictWeakOrdering>
+OutputIterator lower_bound(const thrust::detail::dispatchable_base<System> &system,
+                           ForwardIterator first, 
+                           ForwardIterator last,
+                           InputIterator values_first, 
+                           InputIterator values_last,
+                           OutputIterator output,
+                           StrictWeakOrdering comp);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator>
+OutputIterator upper_bound(const thrust::detail::dispatchable_base<System> &system,
+                           ForwardIterator first, 
+                           ForwardIterator last,
+                           InputIterator values_first, 
+                           InputIterator values_last,
+                           OutputIterator output);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator, typename StrictWeakOrdering>
+OutputIterator upper_bound(const thrust::detail::dispatchable_base<System> &system,
+                           ForwardIterator first, 
+                           ForwardIterator last,
+                           InputIterator values_first, 
+                           InputIterator values_last,
+                           OutputIterator output,
+                           StrictWeakOrdering comp);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator>
+OutputIterator binary_search(const thrust::detail::dispatchable_base<System> &system,
+                             ForwardIterator first, 
+                             ForwardIterator last,
+                             InputIterator values_first, 
+                             InputIterator values_last,
+                             OutputIterator output);
+
+
+template <typename System, typename ForwardIterator, typename InputIterator, typename OutputIterator, typename StrictWeakOrdering>
+OutputIterator binary_search(const thrust::detail::dispatchable_base<System> &system,
+                             ForwardIterator first, 
+                             ForwardIterator last,
+                             InputIterator values_first, 
+                             InputIterator values_last,
+                             OutputIterator output,
+                             StrictWeakOrdering comp);
 
     
 /*! \addtogroup algorithms
@@ -510,13 +630,15 @@ equal_range(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
  *  \tparam InputIterator is a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a>.
  *                        and \c InputIterator's \c value_type is <a href="http://www.sgi.com/tech/stl/LessThanComparable.html">LessThanComparable</a>.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and \c ForwardIterator's difference_type is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p lower_bound
  *  to search for multiple values in a ordered range.
@@ -560,7 +682,7 @@ OutputIterator lower_bound(ForwardIterator first,
                            ForwardIterator last,
                            InputIterator values_first, 
                            InputIterator values_last,
-                           OutputIterator output);
+                           OutputIterator result);
 
 
 /*! \p lower_bound is a vectorized version of binary search: for each 
@@ -574,7 +696,7 @@ OutputIterator lower_bound(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  *  \param comp The comparison operator.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
@@ -583,6 +705,8 @@ OutputIterator lower_bound(ForwardIterator first,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and \c ForwardIterator's difference_type is convertible to \c OutputIterator's \c value_type.
  *  \tparam StrictWeakOrdering is a model of <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html">Strict Weak Ordering</a>.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p lower_bound
  *  to search for multiple values in a ordered range.
@@ -628,7 +752,7 @@ OutputIterator lower_bound(ForwardIterator first,
                            ForwardIterator last,
                            InputIterator values_first, 
                            InputIterator values_last,
-                           OutputIterator output,
+                           OutputIterator result,
                            StrictWeakOrdering comp);
 
 
@@ -642,13 +766,15 @@ OutputIterator lower_bound(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
  *  \tparam InputIterator is a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a>.
  *                        and \c InputIterator's \c value_type is <a href="http://www.sgi.com/tech/stl/LessThanComparable.html">LessThanComparable</a>.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and \c ForwardIterator's difference_type is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p lower_bound
  *  to search for multiple values in a ordered range.
@@ -692,7 +818,7 @@ OutputIterator upper_bound(ForwardIterator first,
                            ForwardIterator last,
                            InputIterator values_first, 
                            InputIterator values_last,
-                           OutputIterator output);
+                           OutputIterator result);
 
 
 /*! \p upper_bound is a vectorized version of binary search: for each 
@@ -706,7 +832,7 @@ OutputIterator upper_bound(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  *  \param comp The comparison operator.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
@@ -715,6 +841,8 @@ OutputIterator upper_bound(ForwardIterator first,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and \c ForwardIterator's difference_type is convertible to \c OutputIterator's \c value_type.
  *  \tparam StrictWeakOrdering is a model of <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html">Strict Weak Ordering</a>.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p lower_bound
  *  to search for multiple values in a ordered range.
@@ -760,7 +888,7 @@ OutputIterator upper_bound(ForwardIterator first,
                            ForwardIterator last,
                            InputIterator values_first, 
                            InputIterator values_last,
-                           OutputIterator output,
+                           OutputIterator result,
                            StrictWeakOrdering comp);
 
 
@@ -775,13 +903,15 @@ OutputIterator upper_bound(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
  *  \tparam InputIterator is a model of <a href="http://www.sgi.com/tech/stl/InputIterator.html">Input Iterator</a>.
  *                        and \c InputIterator's \c value_type is <a href="http://www.sgi.com/tech/stl/LessThanComparable.html">LessThanComparable</a>.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and bool is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p binary_search
  *  to search for multiple values in a ordered range.
@@ -825,7 +955,7 @@ OutputIterator binary_search(ForwardIterator first,
                              ForwardIterator last,
                              InputIterator values_first, 
                              InputIterator values_last,
-                             OutputIterator output);
+                             OutputIterator result);
 
 
 /*! \p binary_search is a vectorized version of binary search: for each 
@@ -840,7 +970,7 @@ OutputIterator binary_search(ForwardIterator first,
  *  \param last The end of the ordered sequence.
  *  \param values_first The beginning of the search values sequence.
  *  \param values_last The end of the search values sequence.
- *  \param output The beginning of the output sequence.
+ *  \param result The beginning of the output sequence.
  *  \param comp The comparison operator.
  * 
  *  \tparam ForwardIterator is a model of <a href="http://www.sgi.com/tech/stl/ForwardIterator">Forward Iterator</a>.
@@ -849,6 +979,8 @@ OutputIterator binary_search(ForwardIterator first,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *                        and bool is convertible to \c OutputIterator's \c value_type.
  *  \tparam StrictWeakOrdering is a model of <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html">Strict Weak Ordering</a>.
+ *
+ *  \pre The ranges <tt>[first,last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p binary_search
  *  to search for multiple values in a ordered range.
@@ -894,7 +1026,7 @@ OutputIterator binary_search(ForwardIterator first,
                              ForwardIterator last,
                              InputIterator values_first, 
                              InputIterator values_last,
-                             OutputIterator output,
+                             OutputIterator result,
                              StrictWeakOrdering comp);
 
 /*! \} // end vectorized_binary_search

@@ -22,9 +22,24 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename BidirectionalIterator>
+  void reverse(const thrust::detail::dispatchable_base<System> &system,
+               BidirectionalIterator first,
+               BidirectionalIterator last);
+
+
+template<typename System, typename BidirectionalIterator, typename OutputIterator>
+  OutputIterator reverse_copy(const thrust::detail::dispatchable_base<System> &system,
+                              BidirectionalIterator first,
+                              BidirectionalIterator last,
+                              OutputIterator result);
+
 
 /*! \addtogroup reordering
  *  \ingroup algorithms
@@ -65,7 +80,7 @@ template<typename BidirectionalIterator>
  *  is written to a different output range, rather than inplace.
  *
  *  \p reverse_copy copies elements from the range <tt>[first, last)</tt> to the
- *  range <tt>[result, result + (last - first))</tt> such that the copy is a 
+ *  range <tt>[result, result + (last - first))</tt> such that the copy is a 
  *  reverse of the original range. Specifically: for every <tt>i</tt> such that
  *  <tt>0 <= i < (last - first)</tt>, \p reverse_copy performs the assignment
  *  <tt>*(result + (last - first) - i) = *(first + i)</tt>.
@@ -79,6 +94,8 @@ template<typename BidirectionalIterator>
  *  \tparam BidirectionalIterator is a model of <a href="http://www.sgi.com/tech/stl/BidirectionalIterator.html">Bidirectional Iterator</a>,
  *          and \p BidirectionalIterator's \p value_type is convertible to \p OutputIterator's \p value_type.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
+ *
+ *  \pre The range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap.
  *
  *  The following code snippet demonstrates how to use \p reverse_copy to reverse
  *  an input \p device_vector of integers to an output \p device_vector.

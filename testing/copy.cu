@@ -374,33 +374,6 @@ void TestCopyIfStencil(const size_t n)
 }
 DECLARE_VARIABLE_UNITTEST(TestCopyIfStencil);
 
-
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-// do we really want to test this ever?
-void TestCopyDeviceThrow(void)
-{
-    typedef int T;
-
-    thrust::device_ptr<T> null_device_ptr((int*)0);
-
-    bool caught_exception = false;
-    try
-    {
-        thrust::copy(null_device_ptr, null_device_ptr + 1, null_device_ptr);
-    } // end try
-    catch(std::runtime_error)
-    {
-        caught_exception = true;
-
-        // kill the context so it can revive later
-        cudaThreadExit();
-    } // end catch
-
-    ASSERT_EQUAL(true, caught_exception);
-}
-DECLARE_UNITTEST(TestCopyDeviceThrow);
-#endif
-
 template <typename Vector>
 void TestCopyCountingIterator(void)
 {
@@ -459,7 +432,27 @@ void TestCopyConstantIteratorToZipIterator(void)
 };
 DECLARE_VECTOR_UNITTEST(TestCopyConstantIteratorToZipIterator);
 
-struct my_tag : thrust::device_system_tag {};
+template<typename InputIterator, typename OutputIterator>
+OutputIterator copy(my_system &system, InputIterator, InputIterator, OutputIterator result)
+{
+    system.validate_dispatch();
+    return result;
+}
+
+void TestCopyDispatchExplicit()
+{
+    thrust::device_vector<int> vec(1);
+
+    my_system sys(0);
+    thrust::copy(sys,
+                 vec.begin(),
+                 vec.end(),
+                 vec.begin());
+
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestCopyDispatchExplicit);
+
 
 template<typename InputIterator, typename OutputIterator>
 OutputIterator copy(my_tag, InputIterator, InputIterator, OutputIterator result)
@@ -468,7 +461,7 @@ OutputIterator copy(my_tag, InputIterator, InputIterator, OutputIterator result)
     return result;
 }
 
-void TestCopyDispatch()
+void TestCopyDispatchImplicit()
 {
     thrust::device_vector<int> vec(1);
 
@@ -478,5 +471,95 @@ void TestCopyDispatch()
 
     ASSERT_EQUAL(13, vec.front());
 }
-DECLARE_UNITTEST(TestCopyDispatch);
+DECLARE_UNITTEST(TestCopyDispatchImplicit);
+
+
+template<typename InputIterator, typename OutputIterator, typename Predicate>
+OutputIterator copy_if(my_system &system, InputIterator, InputIterator, OutputIterator result, Predicate pred)
+{
+    system.validate_dispatch();
+    return result;
+}
+
+void TestCopyIfDispatchExplicit()
+{
+    thrust::device_vector<int> vec(1);
+
+    my_system sys(0);
+    thrust::copy_if(sys,
+                    vec.begin(),
+                    vec.end(),
+                    vec.begin(),
+                    0);
+
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestCopyIfDispatchExplicit);
+
+
+template<typename InputIterator, typename OutputIterator, typename Predicate>
+OutputIterator copy_if(my_tag, InputIterator, InputIterator, OutputIterator result, Predicate pred)
+{
+    *result = 13;
+    return result;
+}
+
+void TestCopyIfDispatchImplicit()
+{
+    thrust::device_vector<int> vec(1);
+
+    thrust::copy_if(thrust::retag<my_tag>(vec.begin()),
+                    thrust::retag<my_tag>(vec.end()),
+                    thrust::retag<my_tag>(vec.begin()),
+                    0);
+
+    ASSERT_EQUAL(13, vec.front());
+}
+DECLARE_UNITTEST(TestCopyIfDispatchImplicit);
+
+
+template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Predicate>
+OutputIterator copy_if(my_system &system, InputIterator1, InputIterator1, InputIterator2, OutputIterator result, Predicate pred)
+{
+    system.validate_dispatch();
+    return result;
+}
+
+void TestCopyIfStencilDispatchExplicit()
+{
+    thrust::device_vector<int> vec(1);
+
+    my_system sys(0);
+    thrust::copy_if(sys,
+                    vec.begin(),
+                    vec.end(),
+                    vec.begin(),
+                    vec.begin(),
+                    0);
+
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestCopyIfStencilDispatchExplicit);
+
+
+template<typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Predicate>
+OutputIterator copy_if(my_tag, InputIterator1, InputIterator1, InputIterator2, OutputIterator result, Predicate pred)
+{
+    *result = 13;
+    return result;
+}
+
+void TestCopyIfStencilDispatchImplicit()
+{
+    thrust::device_vector<int> vec(1);
+
+    thrust::copy_if(thrust::retag<my_tag>(vec.begin()),
+                    thrust::retag<my_tag>(vec.end()),
+                    thrust::retag<my_tag>(vec.begin()),
+                    thrust::retag<my_tag>(vec.begin()),
+                    0);
+
+    ASSERT_EQUAL(13, vec.front());
+}
+DECLARE_UNITTEST(TestCopyIfStencilDispatchImplicit);
 

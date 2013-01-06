@@ -34,25 +34,20 @@ namespace detail
 
 template<typename Pointer>
   class normal_iterator
-    //: public experimental::iterator_adaptor< normal_iterator<Pointer>, Pointer, Pointer >
-    : public experimental::iterator_adaptor<
+    : public iterator_adaptor<
         normal_iterator<Pointer>,
-        Pointer,
-        Pointer,
-        typename thrust::use_default,
-        typename thrust::use_default,
-        typename thrust::use_default,
-        //typename thrust::iterator_traits<Pointer>::reference
-        typename thrust::use_default
+        Pointer
       >
 {
+  typedef iterator_adaptor<normal_iterator<Pointer>, Pointer> super_t;
+
   public:
     __host__ __device__
     normal_iterator() {}
 
     __host__ __device__
     normal_iterator(Pointer p)
-      : normal_iterator::iterator_adaptor_(p) {}
+      : super_t(p) {}
     
     template<typename OtherPointer>
     __host__ __device__
@@ -61,7 +56,7 @@ template<typename Pointer>
                       OtherPointer,
                       Pointer
                     >::type * = 0)
-      : normal_iterator::iterator_adaptor_(other.base()) {}
+      : super_t(other.base()) {}
 
 }; // end normal_iterator
 

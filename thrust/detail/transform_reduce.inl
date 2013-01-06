@@ -28,6 +28,24 @@
 namespace thrust
 {
 
+
+template<typename System,
+         typename InputIterator, 
+         typename UnaryFunction, 
+         typename OutputType,
+         typename BinaryFunction>
+  OutputType transform_reduce(const thrust::detail::dispatchable_base<System> &system,
+                              InputIterator first,
+                              InputIterator last,
+                              UnaryFunction unary_op,
+                              OutputType init,
+                              BinaryFunction binary_op)
+{
+  using thrust::system::detail::generic::transform_reduce;
+  return transform_reduce(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, unary_op, init, binary_op);
+} // end transform_reduce()
+
+
 template<typename InputIterator, 
          typename UnaryFunction, 
          typename OutputType,
@@ -39,12 +57,14 @@ template<typename InputIterator,
                               BinaryFunction binary_op)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::transform_reduce;
 
-  typedef typename thrust::iterator_system<InputIterator>::type system;
+  typedef typename thrust::iterator_system<InputIterator>::type System;
 
-  return transform_reduce(select_system(system()), first, last, unary_op, init, binary_op);
+  System system;
+
+  return thrust::transform_reduce(select_system(system), first, last, unary_op, init, binary_op);
 } // end transform_reduce()
+
 
 } // end namespace thrust
 

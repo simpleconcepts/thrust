@@ -30,16 +30,50 @@ namespace thrust
 {
 
 
+template<typename System, typename ForwardIterator>
+  void sequence(const thrust::detail::dispatchable_base<System> &system,
+                ForwardIterator first,
+                ForwardIterator last)
+{
+  using thrust::system::detail::generic::sequence;
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end sequence()
+
+
+template<typename System, typename ForwardIterator, typename T>
+  void sequence(const thrust::detail::dispatchable_base<System> &system,
+                ForwardIterator first,
+                ForwardIterator last,
+                T init)
+{
+  using thrust::system::detail::generic::sequence;
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, init);
+} // end sequence()
+
+
+template<typename System, typename ForwardIterator, typename T>
+  void sequence(const thrust::detail::dispatchable_base<System> &system,
+                ForwardIterator first,
+                ForwardIterator last,
+                T init,
+                T step)
+{
+  using thrust::system::detail::generic::sequence;
+  return sequence(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, init, step);
+} // end sequence()
+
+
 template<typename ForwardIterator>
   void sequence(ForwardIterator first,
                 ForwardIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sequence;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return sequence(select_system(system()), first, last);
+  System system;
+
+  return thrust::sequence(select_system(system), first, last);
 } // end sequence()
 
 
@@ -49,11 +83,12 @@ template<typename ForwardIterator, typename T>
                 T init)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sequence;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return sequence(select_system(system()), first, last, init);
+  System system;
+
+  return thrust::sequence(select_system(system), first, last, init);
 } // end sequence()
 
 
@@ -64,11 +99,12 @@ template<typename ForwardIterator, typename T>
                 T step)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::sequence;
 
-  typedef typename thrust::iterator_system<ForwardIterator>::type system;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System;
 
-  return sequence(select_system(system()), first, last, init, step);
+  System system;
+
+  return thrust::sequence(select_system(system), first, last, init, step);
 } // end sequence()
 
 

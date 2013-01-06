@@ -23,8 +23,7 @@
 #include <thrust/device_malloc.h>
 #include <thrust/iterator/iterator_traits.h>
 #include <thrust/system/detail/generic/select_system.h>
-#include <thrust/system/detail/generic/memory.h>
-#include <thrust/system/detail/adl/malloc_and_free.h>
+#include <thrust/detail/malloc_and_free.h>
 
 namespace thrust
 {
@@ -33,22 +32,27 @@ namespace thrust
 thrust::device_ptr<void> device_malloc(const std::size_t n)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::malloc;
 
-  typedef thrust::iterator_system< device_ptr<void> >::type system;
+  typedef thrust::iterator_system< thrust::device_ptr<void> >::type system;
 
-  // XXX should use a hypothetical thrust::static_pointer_cast here
-  void* raw_ptr = static_cast<void*>(thrust::raw_pointer_cast(malloc(select_system(system()), n)));
+  // XXX lower to select_system(system) here
+  system s;
 
-  return thrust::device_ptr<void>(raw_ptr);
+  return thrust::device_ptr<void>(thrust::malloc(s, n).get());
 } // end device_malloc()
 
 
 template<typename T>
   thrust::device_ptr<T> device_malloc(const std::size_t n)
 {
-  thrust::device_ptr<void> void_ptr = thrust::device_malloc(n * sizeof(T));
-  return thrust::device_pointer_cast(static_cast<T*>(void_ptr.get()));
+  using thrust::system::detail::generic::select_system;
+
+  typedef thrust::iterator_system< thrust::device_ptr<void> >::type system;
+
+  // XXX lower to select_system(system) here
+  system s;
+
+  return thrust::device_ptr<T>(thrust::malloc<T>(s,n).get());
 } // end device_malloc()
 
 

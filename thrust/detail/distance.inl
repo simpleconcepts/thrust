@@ -20,25 +20,20 @@
  */
 
 #include <thrust/advance.h>
-#include <thrust/system/detail/generic/select_system.h>
 #include <thrust/system/detail/generic/distance.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <thrust/system/detail/adl/distance.h>
 
 namespace thrust
 {
+
 
 template<typename InputIterator>
   inline typename thrust::iterator_traits<InputIterator>::difference_type
     distance(InputIterator first, InputIterator last)
 {
-  using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::distance;
-
-  typedef typename thrust::iterator_system<InputIterator>::type system;
-
-  return distance(select_system(system()), first, last);
+  return thrust::system::detail::generic::distance(first, last);
 } // end distance()
+
 
 } // end namespace thrust
 

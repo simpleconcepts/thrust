@@ -22,9 +22,75 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename UnaryFunction>
+  OutputIterator transform(const thrust::detail::dispatchable_base<System> &system,
+                           InputIterator first, InputIterator last,
+                           OutputIterator result,
+                           UnaryFunction op);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename BinaryFunction>
+  OutputIterator transform(const thrust::detail::dispatchable_base<System> &system,
+                           InputIterator1 first1, InputIterator1 last1,
+                           InputIterator2 first2,
+                           OutputIterator result,
+                           BinaryFunction op);
+
+
+template<typename System,
+         typename InputIterator,
+         typename ForwardIterator,
+         typename UnaryFunction,
+         typename Predicate>
+  ForwardIterator transform_if(const thrust::detail::dispatchable_base<System> &system,
+                               InputIterator first, InputIterator last,
+                               ForwardIterator result,
+                               UnaryFunction op,
+                               Predicate pred);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename ForwardIterator,
+         typename UnaryFunction,
+         typename Predicate>
+  ForwardIterator transform_if(const thrust::detail::dispatchable_base<System> &system,
+                               InputIterator1 first, InputIterator1 last,
+                               InputIterator2 stencil,
+                               ForwardIterator result,
+                               UnaryFunction op,
+                               Predicate pred);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename InputIterator3,
+         typename ForwardIterator,
+         typename BinaryFunction,
+         typename Predicate>
+  ForwardIterator transform_if(const thrust::detail::dispatchable_base<System> &system,
+                               InputIterator1 first1, InputIterator1 last1,
+                               InputIterator2 first2,
+                               InputIterator3 stencil,
+                               ForwardIterator result,
+                               BinaryFunction binary_op,
+                               Predicate pred);
+
 
 /*! \addtogroup algorithms
  */
@@ -54,6 +120,8 @@ namespace thrust
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam UnaryFunction is a model of <a href="http://www.sgi.com/tech/stl/UnaryFunction.html">Unary Function</a>
  *                              and \c UnaryFunction's \c result_type is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result, but the range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt> otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform
  *
@@ -105,6 +173,9 @@ template<typename InputIterator,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam BinaryFunction is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                              and \c BinaryFunction's \c result_type is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first1 may equal \p result, but the range <tt>[first1, last1)</tt> shall not overlap the range <tt>[result, result + (last1 - first1))</tt> otherwise.
+ *  \pre \p first2 may equal \p result, but the range <tt>[first2, first2 + (last1 - first1))</tt> shall not overlap the range <tt>[result, result + (last1 - first1))</tt> otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform
  *
@@ -163,6 +234,8 @@ template<typename InputIterator1,
  *  \tparam UnaryFunction is a model of <a href="http://www.sgi.com/tech/stl/UnaryFunction.html">Unary Function</a>
  *                        and \c UnaryFunction's \c result_type is convertible to \c OutputIterator's \c value_type.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
+ *
+ *  \pre \p first may equal \p result, but the range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt> otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform_if:
  *
@@ -234,6 +307,9 @@ template<typename InputIterator,
  *                        and \c UnaryFunction's \c result_type is convertible to \c OutputIterator's \c value_type.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
  *
+ *  \pre \p first may equal \p result, but the range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt> otherwise.
+ *  \pre \p stencil may equal \p result, but the range <tt>[stencil, stencil + (last - first))</tt> shall not overlap the range <tt>[result, result + (last - first))</tt> otherwise.
+ *
  *  The following code snippet demonstrates how to use \p transform_if:
  *
  *  \code
@@ -298,6 +374,10 @@ template<typename InputIterator1,
  *  \tparam BinaryFunction is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                         and \c BinaryFunction's \c result_type is convertible to \c OutputIterator's \c value_type.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
+ *
+ *  \pre \p first1 may equal \p result, but the range <tt>[first1, last1)</tt> shall not overlap the range <tt>[result, result + (last1 - first1))</tt> otherwise.
+ *  \pre \p first2 may equal \p result, but the range <tt>[first2, first2 + (last1 - first1))</tt> shall not overlap the range <tt>[result, result + (last1 - first1))</tt> otherwise.
+ *  \pre \p stencil may equal \p result, but the range <tt>[stencil, stencil + (last1 - first1))</tt> shall not overlap the range <tt>[result, result + (last1 - first1))</tt> otherwise.
  *
  *  The following code snippet demonstrates how to use \p transform_if:
  *

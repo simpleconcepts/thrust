@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <thrust/memory.h>
 
 template <typename T, unsigned int N>
 struct FixedVector
@@ -125,5 +126,59 @@ void swap(user_swappable &x, user_swappable &y)
 {
   x.was_swapped = true;
   y.was_swapped = false;
+}
+
+class my_system : public thrust::device_system<my_system>
+{
+  public:
+    my_system(int)
+      : correctly_dispatched(false),
+        num_copies(0)
+    {}
+
+    my_system(const my_system &other)
+      : correctly_dispatched(false),
+        num_copies(other.num_copies + 1)
+    {}
+
+    void validate_dispatch()
+    {
+      correctly_dispatched = (num_copies == 0);
+    }
+
+    bool is_valid()
+    {
+      return correctly_dispatched;
+    }
+
+  private:
+    bool correctly_dispatched;
+
+    // count the number of copies so that we can validate
+    // that dispatch does not introduce any
+    unsigned int num_copies;
+
+
+    // disallow default construction
+    my_system();
+};
+
+struct my_tag : thrust::device_system<my_tag> {};
+
+namespace unittest
+{
+
+
+using thrust::detail::int8_t;
+using thrust::detail::int16_t;
+using thrust::detail::int32_t;
+using thrust::detail::int64_t;
+
+using thrust::detail::uint8_t;
+using thrust::detail::uint16_t;
+using thrust::detail::uint32_t;
+using thrust::detail::uint64_t;
+
+  
 }
 

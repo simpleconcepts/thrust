@@ -32,8 +32,8 @@ namespace detail
 namespace generic
 {
 
-template<typename BidirectionalIterator>
-  void reverse(tag,
+template<typename System, typename BidirectionalIterator>
+  void reverse(thrust::dispatchable<System> &system,
                BidirectionalIterator first,
                BidirectionalIterator last)
 {
@@ -45,17 +45,19 @@ template<typename BidirectionalIterator>
   thrust::advance(mid, N / 2);
 
   // swap elements of [first,mid) with [last - 1, mid)
-  thrust::swap_ranges(first, mid, thrust::make_reverse_iterator(last));
+  thrust::swap_ranges(system, first, mid, thrust::make_reverse_iterator(last));
 } // end reverse()
 
-template<typename BidirectionalIterator,
+template<typename System,
+         typename BidirectionalIterator,
          typename OutputIterator>
-  OutputIterator reverse_copy(tag,
+  OutputIterator reverse_copy(thrust::dispatchable<System> &system,
                               BidirectionalIterator first,
                               BidirectionalIterator last,
                               OutputIterator result)
 {
-  return thrust::copy(thrust::make_reverse_iterator(last),
+  return thrust::copy(system,
+                      thrust::make_reverse_iterator(last),
                       thrust::make_reverse_iterator(first),
                       result);
 } // end reverse_copy()

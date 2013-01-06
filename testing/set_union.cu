@@ -5,7 +5,37 @@
 #include <thrust/sort.h>
 #include <thrust/iterator/discard_iterator.h>
 
-struct my_tag : thrust::device_system_tag {};
+
+template<typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator>
+OutputIterator set_union(my_system &system,
+                         InputIterator1,
+                         InputIterator1,
+                         InputIterator2,
+                         InputIterator2,
+                         OutputIterator result)
+{
+  system.validate_dispatch();
+  return result;
+}
+
+void TestSetUnionDispatchExplicit()
+{
+  thrust::device_vector<int> vec(1);
+
+  my_system sys(0);
+  thrust::set_union(sys,
+                    vec.begin(),
+                    vec.begin(),
+                    vec.begin(),
+                    vec.begin(),
+                    vec.begin());
+
+  ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestSetUnionDispatchExplicit);
+
 
 template<typename InputIterator1,
          typename InputIterator2,
@@ -21,7 +51,7 @@ OutputIterator set_union(my_tag,
   return result;
 }
 
-void TestSetUnionDispatch()
+void TestSetUnionDispatchImplicit()
 {
   thrust::device_vector<int> vec(1);
 
@@ -33,7 +63,7 @@ void TestSetUnionDispatch()
 
   ASSERT_EQUAL(13, vec.front());
 }
-DECLARE_UNITTEST(TestSetUnionDispatch);
+DECLARE_UNITTEST(TestSetUnionDispatchImplicit);
 
 
 template<typename Vector>
@@ -92,7 +122,7 @@ void TestSetUnion(const size_t n)
   size_t sizes[]   = {0, 1, n / 2, n, n + 1, 2 * n};
   size_t num_sizes = sizeof(sizes) / sizeof(size_t);
 
-  thrust::host_vector<T> random = unittest::random_integers<char>(n + *thrust::max_element(sizes, sizes + num_sizes));
+  thrust::host_vector<T> random = unittest::random_integers<unittest::int8_t>(n + *thrust::max_element(sizes, sizes + num_sizes));
 
   thrust::host_vector<T> h_a(random.begin(), random.begin() + n);
   thrust::host_vector<T> h_b(random.begin() + n, random.end());
@@ -165,39 +195,4 @@ void TestSetUnionToDiscardIterator(const size_t n)
   ASSERT_EQUAL_QUIET(reference, d_result);
 }
 DECLARE_VARIABLE_UNITTEST(TestSetUnionToDiscardIterator);
-
-
-template<typename T>
-  void TestSetUnionDescending(size_t n)
-{
-  thrust::host_vector<T> h_a = unittest::random_integers<T>(n);
-  thrust::host_vector<T> h_b = unittest::random_integers<T>(n);
-
-  thrust::stable_sort(h_a.begin(), h_a.end(), thrust::greater<T>());
-  thrust::stable_sort(h_b.begin(), h_b.end(), thrust::greater<T>());
-
-  thrust::device_vector<T> d_a = h_a;
-  thrust::device_vector<T> d_b = h_b;
-
-  thrust::host_vector<T>   h_result(h_a.size() + h_b.size());
-  thrust::device_vector<T> d_result(d_a.size() + d_b.size());
-
-  typename thrust::host_vector<T>::iterator h_end;
-  typename thrust::device_vector<T>::iterator d_end;
-  
-  h_end = thrust::set_union(h_a.begin(), h_a.end(),
-                            h_b.begin(), h_b.end(),
-                            h_result.begin(),
-                            thrust::greater<T>());
-  h_result.erase(h_end, h_result.end());
-
-  d_end = thrust::set_union(d_a.begin(), d_a.end(),
-                            d_b.begin(), d_b.end(),
-                            d_result.begin(),
-                            thrust::greater<T>());
-  d_result.erase(d_end, d_result.end());
-
-  ASSERT_EQUAL(h_result, d_result);
-}
-DECLARE_VARIABLE_UNITTEST(TestSetUnionDescending);
 

@@ -25,19 +25,81 @@ namespace thrust
 {
 
 
+template<typename System, typename InputIterator, typename OutputIterator>
+  OutputIterator copy(const thrust::detail::dispatchable_base<System> &system,
+                      InputIterator first,
+                      InputIterator last,
+                      OutputIterator result)
+{
+  using thrust::system::detail::generic::copy;
+  return copy(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+} // end copy()
+
+
+template<typename System, typename InputIterator, typename Size, typename OutputIterator>
+  OutputIterator copy_n(const thrust::detail::dispatchable_base<System> &system,
+                        InputIterator first,
+                        Size n,
+                        OutputIterator result)
+{
+  using thrust::system::detail::generic::copy_n;
+  return copy_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, result);
+} // end copy_n()
+
+
+namespace detail
+{
+
+
+template<typename System1,
+         typename System2,
+         typename InputIterator,
+         typename OutputIterator>
+  OutputIterator two_system_copy(thrust::dispatchable<System1> &system1,
+                                 thrust::dispatchable<System2> &system2,
+                                 InputIterator first,
+                                 InputIterator last,
+                                 OutputIterator result)
+{
+  using thrust::system::detail::generic::select_system;
+
+  return thrust::copy(select_system(thrust::detail::derived_cast(thrust::detail::strip_const(system1)), thrust::detail::derived_cast(thrust::detail::strip_const(system2))), first, last, result);
+} // end two_system_copy()
+
+
+template<typename System1,
+         typename System2,
+         typename InputIterator,
+         typename Size,
+         typename OutputIterator>
+  OutputIterator two_system_copy_n(thrust::dispatchable<System1> &system1,
+                                   thrust::dispatchable<System2> &system2,
+                                   InputIterator first,
+                                   Size n,
+                                   OutputIterator result)
+{
+  using thrust::system::detail::generic::select_system;
+
+  return thrust::copy_n(select_system(thrust::detail::derived_cast(thrust::detail::strip_const(system1)), thrust::detail::derived_cast(thrust::detail::strip_const(system2))), first, n, result);
+} // end two_system_copy_n()
+
+
+} // end detail
+
+
 template<typename InputIterator,
          typename OutputIterator>
   OutputIterator copy(InputIterator first,
                       InputIterator last,
                       OutputIterator result)
 {
-  using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::copy;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  System1 system1;
+  System2 system2;
 
-  return copy(select_system(system1(),system2()), first, last, result);
+  return thrust::detail::two_system_copy(system1, system2, first, last, result);
 } // end copy()
 
 
@@ -48,13 +110,13 @@ template<typename InputIterator,
                         Size n,
                         OutputIterator result)
 {
-  using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::copy_n;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  System1 system1;
+  System2 system2;
 
-  return copy_n(select_system(system1(),system2()), first, n, result);
+  return thrust::detail::two_system_copy_n(system1, system2, first, n, result);
 } // end copy_n()
 
 

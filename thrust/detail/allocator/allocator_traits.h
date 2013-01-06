@@ -28,15 +28,18 @@ namespace detail
 namespace allocator_traits_detail
 {
 
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_pointer, pointer);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_const_pointer, const_pointer);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_void_pointer, void_pointer);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_const_void_pointer, const_void_pointer);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_difference_type, difference_type);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_size_type, size_type);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_copy_assignment, propagate_on_container_copy_assignment);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_move_assignment, propagate_on_container_move_assignment);
-__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_swap, propagate_on_container_swap);
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_pointer, pointer)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_const_pointer, const_pointer)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_reference, reference)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_const_reference, const_reference)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_void_pointer, void_pointer)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_const_void_pointer, const_void_pointer)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_difference_type, difference_type)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_size_type, size_type)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_copy_assignment, propagate_on_container_copy_assignment)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_move_assignment, propagate_on_container_move_assignment)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_propagate_on_container_swap, propagate_on_container_swap)
+__THRUST_DEFINE_HAS_NESTED_TYPE(has_system_type, system_type)
 
 template<typename T>
   struct nested_pointer
@@ -48,6 +51,18 @@ template<typename T>
   struct nested_const_pointer
 {
   typedef typename T::const_pointer type;
+};
+
+template<typename T>
+  struct nested_reference
+{
+  typedef typename T::reference type;
+};
+
+template<typename T>
+  struct nested_const_reference
+{
+  typedef typename T::const_reference type;
 };
 
 template<typename T>
@@ -90,6 +105,12 @@ template<typename T>
   struct nested_propagate_on_container_swap
 {
   typedef typename T::propagate_on_container_swap type;
+};
+
+template<typename T>
+  struct nested_system_type
+{
+  typedef typename T::system_type type;
 };
 
 } // end allocator_traits_detail
@@ -165,6 +186,12 @@ template<typename Alloc>
     identity_<false_type>
   >::type propagate_on_container_swap;
 
+  typedef typename eval_if<
+    allocator_traits_detail::has_system_type<allocator_type>::value,
+    allocator_traits_detail::nested_system_type<allocator_type>,
+    thrust::iterator_system<pointer>
+  >::type system_type;
+
   // XXX rebind and rebind_traits are alias templates
   //     and so are omitted while c++11 is unavailable
 
@@ -187,6 +214,23 @@ template<typename Alloc>
 
   inline static size_type max_size(const allocator_type &a);
 }; // end allocator_traits
+
+
+// XXX consider moving this non-standard functionality inside allocator_traits
+template<typename Alloc>
+  struct allocator_system
+{
+  // the type of the allocator's system
+  typedef typename eval_if<
+    allocator_traits_detail::has_system_type<Alloc>::value,
+    allocator_traits_detail::nested_system_type<Alloc>,
+    thrust::iterator_system<
+      typename allocator_traits<Alloc>::pointer
+    >
+  >::type type;
+
+  inline static type &get(Alloc &a);
+};
 
 
 } // end detail
