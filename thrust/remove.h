@@ -22,9 +22,75 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename ForwardIterator,
+         typename T>
+  ForwardIterator remove(const thrust::detail::dispatchable_base<System> &system,
+                         ForwardIterator first,
+                         ForwardIterator last,
+                         const T &value);
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename T>
+  OutputIterator remove_copy(const thrust::detail::dispatchable_base<System> &system,
+                             InputIterator first,
+                             InputIterator last,
+                             OutputIterator result,
+                             const T &value);
+
+
+template<typename System,
+         typename ForwardIterator,
+         typename Predicate>
+  ForwardIterator remove_if(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            Predicate pred);
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename Predicate>
+  OutputIterator remove_copy_if(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result,
+                                Predicate pred);
+
+
+template<typename System,
+         typename ForwardIterator,
+         typename InputIterator,
+         typename Predicate>
+  ForwardIterator remove_if(const thrust::detail::dispatchable_base<System> &system,
+                            ForwardIterator first,
+                            ForwardIterator last,
+                            InputIterator stencil,
+                            Predicate pred);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename Predicate>
+  OutputIterator remove_copy_if(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator1 first,
+                                InputIterator1 last,
+                                InputIterator2 stencil,
+                                OutputIterator result,
+                                Predicate pred);
+
 
 /*! \addtogroup stream_compaction Stream Compaction
  *  \ingroup reordering
@@ -109,6 +175,8 @@ template<typename ForwardIterator,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam T is a model of <a href="http://www.sgi.com/tech/stl/EqualityComparable">Equality Comparable</a>,
  *          and objects of type \p T can be compared for equality with objects of \p InputIterator's \c value_type.
+ *
+ *  \pre The range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt>.
  *
  *  The following code snippet demonstrates how to use \p remove_copy to copy
  *  a sequence of numbers to an output range while omitting a value of interest.
@@ -227,6 +295,8 @@ template<typename ForwardIterator,
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
  *
+ *  \pre The range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt>.
+ *
  *  The following code snippet demonstrates how to use \p remove_copy_if to copy
  *  a sequence of numbers to an output range while omitting even numbers.
  *
@@ -286,6 +356,9 @@ template<typename InputIterator,
  *          and \p InputIterator's \c value_type is convertible to \p Predicate's \c argument_type.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/Predicate.html">Predicate</a>.
  *
+ *  \pre The range <tt>[first, last)</tt> shall not overlap the range <tt>[result, result + (last - first))</tt>.
+ *  \pre The range <tt>[stencil, stencil + (last - first))</tt> shall not overlap the range <tt>[result, result + (last - first))</tt>.
+ *
  *  The following code snippet demonstrates how to use \p remove_if to remove
  *  specific elements from an array of integers.
  *
@@ -339,6 +412,8 @@ template<typename ForwardIterator,
  *          and \p InputIterator2's \c value_type is convertible to \p Predicate's \c argument_type.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
+ *
+ *  \pre The range <tt>[stencil, stencil + (last - first))</tt> shall not overlap the range <tt>[result, result + (last - first))</tt>.
  *
  *  The following code snippet demonstrates how to use \p remove_copy_if to copy
  *  a sequence of numbers to an output range while omitting specific elements.

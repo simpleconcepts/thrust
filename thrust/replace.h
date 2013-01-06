@@ -22,9 +22,58 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename ForwardIterator, typename T>
+  void replace(const thrust::detail::dispatchable_base<System> &system,
+               ForwardIterator first, ForwardIterator last,
+               const T &old_value,
+               const T &new_value);
+
+
+template<typename System, typename ForwardIterator, typename Predicate, typename T>
+  void replace_if(const thrust::detail::dispatchable_base<System> &system,
+                  ForwardIterator first, ForwardIterator last,
+                  Predicate pred,
+                  const T &new_value);
+
+
+template<typename System, typename ForwardIterator, typename InputIterator, typename Predicate, typename T>
+  void replace_if(const thrust::detail::dispatchable_base<System> &system,
+                  ForwardIterator first, ForwardIterator last,
+                  InputIterator stencil,
+                  Predicate pred,
+                  const T &new_value);
+
+
+template<typename System, typename InputIterator, typename OutputIterator, typename T>
+  OutputIterator replace_copy(const thrust::detail::dispatchable_base<System> &system,
+                              InputIterator first, InputIterator last,
+                              OutputIterator result,
+                              const T &old_value,
+                              const T &new_value);
+
+
+template<typename System, typename InputIterator, typename OutputIterator, typename Predicate, typename T>
+  OutputIterator replace_copy_if(const thrust::detail::dispatchable_base<System> &system,
+                                 InputIterator first, InputIterator last,
+                                 OutputIterator result,
+                                 Predicate pred,
+                                 const T &new_value);
+
+
+template<typename System, typename InputIterator1, typename InputIterator2, typename OutputIterator, typename Predicate, typename T>
+  OutputIterator replace_copy_if(const thrust::detail::dispatchable_base<System> &system,
+                                 InputIterator1 first, InputIterator1 last,
+                                 InputIterator2 stencil,
+                                 OutputIterator result,
+                                 Predicate pred,
+                                 const T &new_value);
+
 
 /*! \addtogroup transformations
  *  \addtogroup replacing
@@ -225,6 +274,8 @@ template<typename ForwardIterator, typename InputIterator, typename Predicate, t
  *          \p T may be compared for equality with \p InputIterator's \c value_type,
  *          and \p T is convertible to \p OutputIterator's \c value_type.
  *
+ *  \pre \p first may equal \p result, but the ranges <tt>[first, last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
+ *
  *  \code
  *  #include <thrust/replace.h>
  *  #include <thrust/device_vector.h>
@@ -274,6 +325,8 @@ template<typename InputIterator, typename OutputIterator, typename T>
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
  *  \tparam T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and \p T is convertible to \p OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result, but the ranges <tt>[first, last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  \code
  *  #include <thrust/replace.h>
@@ -338,6 +391,9 @@ template<typename InputIterator, typename OutputIterator, typename Predicate, ty
  *  \tparam Predicate is a model of <a href="http://www.sgi.com/tech/stl/Predicate.html">Predicate</a>.
  *  \tparam T is a model of <a href="http://www.sgi.com/tech/stl/Assignable.html">Assignable</a>,
  *          and \p T is convertible to \p OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result, but the ranges <tt>[first, last)</tt> and <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
+ *  \pre \p stencil may equal \p result, but the ranges <tt>[stencil, stencil + (last - first))</tt> and <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  \code
  *  #include <thrust/replace.h>

@@ -22,9 +22,157 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator>
+  OutputIterator inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result);
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename AssociativeOperator>
+  OutputIterator inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result,
+                                AssociativeOperator binary_op);
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator>
+  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result);
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename T>
+  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result,
+                                T init);
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename T,
+         typename AssociativeOperator>
+  OutputIterator exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                InputIterator first,
+                                InputIterator last,
+                                OutputIterator result,
+                                T init,
+                                AssociativeOperator binary_op);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator>
+  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename BinaryPredicate>
+  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result,
+                                       BinaryPredicate binary_pred);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename BinaryPredicate,
+         typename AssociativeOperator>
+  OutputIterator inclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result,
+                                       BinaryPredicate binary_pred,
+                                       AssociativeOperator binary_op);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator>
+  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename T>
+  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result,
+                                       T init);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename T,
+         typename BinaryPredicate>
+  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result,
+                                       T init,
+                                       BinaryPredicate binary_pred);
+
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator,
+         typename T,
+         typename BinaryPredicate,
+         typename AssociativeOperator>
+  OutputIterator exclusive_scan_by_key(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator1 first1,
+                                       InputIterator1 last1,
+                                       InputIterator2 first2,
+                                       OutputIterator result,
+                                       T init,
+                                       BinaryPredicate binary_pred,
+                                       AssociativeOperator binary_op);
+
 
 /*! \addtogroup algorithms
  */
@@ -61,6 +209,8 @@ namespace thrust
  *                         \c value_type, then <tt>x + y</tt> is defined. If \c T is
  *                         \c OutputIterator's \c value_type, then <tt>T(0)</tt> is
  *                         defined.
+ *
+ *  \pre \p first may equal \p result but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p inclusive_scan
  *
@@ -110,6 +260,8 @@ template<typename InputIterator,
  *                              and \c AssociativeOperator's \c result_type is
  *                              convertible to \c OutputIterator's \c value_type.
  *
+ *  \pre \p first may equal \p result but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p inclusive_scan
  *
  *  \code
@@ -155,6 +307,8 @@ template<typename InputIterator,
  *                         \c OutputIterator's \c value_type, then <tt>T(0)</tt> is
  *                         defined.
  *
+ *  \pre \p first may equal \p result but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p exclusive_scan
  *
  *  \code
@@ -199,6 +353,8 @@ template<typename InputIterator,
  *                         \c value_type, then <tt>x + y</tt> is defined.
  *  \tparam T is convertible to \c OutputIterator's \c value_type.
  *
+ *  \pre \p first may equal \p result but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p exclusive_scan
  *
  *  \code
@@ -224,8 +380,8 @@ template<typename InputIterator,
 /*! \p exclusive_scan computes an exclusive prefix sum operation. The
  *  term 'exclusive' means that each result does not include the 
  *  corresponding input operand in the partial sum.  More precisely,
- *  \p init is assigned to <tt>*result</tt> and the value
- *  <tt>binary_op(init, *first)</tt> is assigned to <tt>*(result + 1)</tt>,
+ *  \p init is assigned to <tt>\*result</tt> and the value
+ *  <tt>binary_op(init, \*first)</tt> is assigned to <tt>\*(result + 1)</tt>,
  *  and so on. This version of the function requires both and associative 
  *  operator and an initial value \p init.  When the input and output
  *  sequences are the same, the scan is performed in-place.
@@ -248,6 +404,8 @@ template<typename InputIterator,
  *  \tparam AssociativeOperator is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                              and \c AssociativeOperator's \c result_type is
  *                              convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first may equal \p result but the range <tt>[first, last)</tt> and the range <tt>[result, result + (last - first))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p exclusive_scan
  *
@@ -313,6 +471,9 @@ template<typename InputIterator,
  *                         and if \c x and \c y are objects of \c OutputIterator's \c value_type, then 
  *                         <tt>binary_op(x,y)</tt> is defined.
  *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p inclusive_scan_by_key
  *
  *  \code
@@ -371,6 +532,9 @@ template<typename InputIterator1,
  *                         and if \c x and \c y are objects of \c OutputIterator's \c value_type, then 
  *                         <tt>binary_op(x,y)</tt> is defined.
  *  \tparam BinaryPredicate is a model of <a href="http://www.sgi.com/tech/stl/BinaryPredicate.html">Binary Predicate</a>.
+ *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p inclusive_scan_by_key
  *
@@ -439,6 +603,9 @@ template<typename InputIterator1,
  *                              and \c AssociativeOperator's \c result_type is
  *                              convertible to \c OutputIterator's \c value_type.
  *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p inclusive_scan_by_key
  *
  *  \code
@@ -495,6 +662,9 @@ template<typename InputIterator1,
  *  \param first2 The beginning of the input value sequence.
  *  \param result The beginning of the output value sequence.
  *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *
  *  The following code snippet demonstrates how to use \p exclusive_scan_by_key.
  *
  *  \code
@@ -535,6 +705,9 @@ template<typename InputIterator1,
  *  \param result The beginning of the output value sequence.
  *  \param init The initial of the exclusive sum value.
  *  \return The end of the output sequence.
+ *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p exclusive_scan_by_key
  *
@@ -589,6 +762,9 @@ template<typename InputIterator1,
  *  \param init The initial of the exclusive sum value.
  *  \param binary_pred The binary predicate used to determine equality of keys.
  *  \return The end of the output sequence.
+ *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p exclusive_scan_by_key
  *
@@ -664,6 +840,9 @@ template<typename InputIterator1,
  *  \tparam BinaryPredicate is a model of <a href="http://www.sgi.com/tech/stl/BinaryPredicate.html">Binary Predicate</a>.
  *  \tparam AssociativeOperator is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *                         and \c AssociativeOperator's \c result_type is convertible to \c OutputIterator's \c value_type.
+ *
+ *  \pre \p first1 may equal \p result but the range <tt>[first1, last1)</tt> and the range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
+ *  \pre \p first2 may equal \p result but the range <tt>[first2, first2 + (last1 - first1)</tt> and range <tt>[result, result + (last1 - first1))</tt> shall not overlap otherwise.
  *
  *  The following code snippet demonstrates how to use \p exclusive_scan_by_key
  *

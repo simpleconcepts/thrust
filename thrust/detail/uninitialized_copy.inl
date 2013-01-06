@@ -29,6 +29,28 @@ namespace thrust
 {
 
 
+template<typename System, typename InputIterator, typename ForwardIterator>
+  ForwardIterator uninitialized_copy(const thrust::detail::dispatchable_base<System> &system,
+                                     InputIterator first,
+                                     InputIterator last,
+                                     ForwardIterator result)
+{
+  using thrust::system::detail::generic::uninitialized_copy;
+  return uninitialized_copy(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+} // end uninitialized_copy()
+
+
+template<typename System, typename InputIterator, typename Size, typename ForwardIterator>
+  ForwardIterator uninitialized_copy_n(const thrust::detail::dispatchable_base<System> &system,
+                                       InputIterator first,
+                                       Size n,
+                                       ForwardIterator result)
+{
+  using thrust::system::detail::generic::uninitialized_copy_n;
+  return uninitialized_copy_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, result);
+} // end uninitialized_copy_n()
+
+
 template<typename InputIterator,
          typename ForwardIterator>
   ForwardIterator uninitialized_copy(InputIterator first,
@@ -36,12 +58,14 @@ template<typename InputIterator,
                                      ForwardIterator result)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::uninitialized_copy;
 
-  typedef typename thrust::iterator_system<InputIterator>::type   system1;
-  typedef typename thrust::iterator_system<ForwardIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type   System1;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System2;
 
-  return uninitialized_copy(select_system(system1(),system2()), first, last, result);
+  System1 system1;
+  System2 system2;
+
+  return thrust::uninitialized_copy(select_system(system1,system2), first, last, result);
 } // end uninitialized_copy()
 
 
@@ -53,12 +77,14 @@ template<typename InputIterator,
                                        ForwardIterator result)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::uninitialized_copy_n;
 
-  typedef typename thrust::iterator_system<InputIterator>::type   system1;
-  typedef typename thrust::iterator_system<ForwardIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type   System1;
+  typedef typename thrust::iterator_system<ForwardIterator>::type System2;
 
-  return uninitialized_copy_n(select_system(system1(),system2()), first, n, result);
+  System1 system1;
+  System2 system2;
+
+  return thrust::uninitialized_copy_n(select_system(system1,system2), first, n, result);
 } // end uninitialized_copy_n()
 
 

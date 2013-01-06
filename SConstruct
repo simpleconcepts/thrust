@@ -18,7 +18,7 @@ def RecursiveGlob(env, pattern, directory = Dir('.'), exclude = '\B'):
   for n in directory.glob('*'):
     # only recurse into directories which aren't in the blacklist
     import re
-    if n.isdir() and not re.match(exclude, directory.rel_path(n)):
+    if isinstance(n,type(directory)) and not re.match(exclude, directory.rel_path(n)):
       result.extend(RecursiveGlob(env, pattern, n, exclude))
   return result
 
@@ -162,23 +162,39 @@ def tbb_installation(env):
   return (bin_path,lib_path,inc_path,'tbb')
 
 
-def inc_paths(env):
+def inc_paths(env, host_backend, device_backend):
   """Returns a list of include paths needed by the compiler"""
+  result = []
   thrust_inc_path = Dir('.')
-  cuda_inc_path = cuda_installation()[2]
-  tbb_inc_path  = tbb_installation(env)[2]
 
   # note that the thrust path comes before the cuda path, which
   # may itself contain a different version of thrust
-  return [thrust_inc_path, cuda_inc_path, tbb_inc_path]
+  result.append(thrust_inc_path)
+  
+  if host_backend == 'cuda' or device_backend == 'cuda':
+    cuda_inc_path = cuda_installation()[2]
+    result.append(cuda_inc_path)
+
+  if host_backend == 'tbb' or device_backend == 'tbb':
+    tbb_inc_path  = tbb_installation(env)[2]
+    result.append(tbb_inc_path)
+
+  return result
   
 
-def lib_paths(env):
+def lib_paths(env, host_backend, device_backend):
   """Returns a list of lib paths needed by the linker"""
-  cuda_lib_path = cuda_installation()[1]
-  tbb_lib_path  = tbb_installation(env)[1]
+  result = []
 
-  return [cuda_lib_path, tbb_lib_path]
+  if host_backend == 'cuda' or device_backend == 'cuda':
+    cuda_lib_path = cuda_installation()[1]
+    result.append(cuda_lib_path)
+
+  if host_backend == 'tbb' or device_backend == 'tbb':
+    tbb_lib_path  = tbb_installation(env)[1]
+    result.append(tbb_lib_path)
+
+  return result
 
 
 def libs(env, CCX, host_backend, device_backend):
@@ -239,7 +255,7 @@ def macros(mode, host_backend, device_backend):
   return result
 
 
-def cc_compiler_flags(CXX, mode, host_backend, device_backend, warn_all, warnings_as_errors):
+def cc_compiler_flags(CXX, mode, platform, host_backend, device_backend, warn_all, warnings_as_errors):
   """Returns a list of command line flags needed by the c or c++ compiler"""
   # start with all platform-independent preprocessor macros
   result = macros(mode, host_backend, device_backend)
@@ -273,6 +289,10 @@ def cc_compiler_flags(CXX, mode, host_backend, device_backend, warn_all, warning
   # workarounds
   result.extend(flags['workarounds'])
 
+  # on darwin, we need to tell the compiler to build 32b code for cuda
+  if platform == 'darwin' and device_backend == 'cuda':
+    result.append('-m32')
+
   return result
 
 
@@ -282,7 +302,9 @@ def nv_compiler_flags(mode, device_backend, arch):
   for machine_arch in arch:
     # transform arch_XX to compute_XX
     virtual_arch = machine_arch.replace('sm','compute')
-    result.append('-gencode="arch={0},code={1}"'.format(virtual_arch, virtual_arch))
+    # the weird -gencode flag is formatted like this:
+    # -gencode=arch=compute_10,code=\"sm_10,compute_10\"
+    result.append('-gencode=arch={0},\\"code={1},{2}\\"'.format(virtual_arch, machine_arch, virtual_arch))
   if mode == 'debug':
     # turn on debug mode
     # XXX make this work when we've debugged nvcc -G
@@ -313,7 +335,7 @@ def command_line_variables():
   
   # add a variable to handle compute capability
   vars.Add(ListVariable('arch', 'Compute capability code generation', 'sm_10',
-                        ['sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21']))
+                        ['sm_10', 'sm_11', 'sm_12', 'sm_13', 'sm_20', 'sm_21', 'sm_30', 'sm_35']))
   
   # add a variable to handle warnings
   # only enable Wall by default on compilers other than cl
@@ -358,15 +380,15 @@ for (host,device) in itertools.product(host_backends, device_backends):
   env = master_env.Clone()
 
   # populate the environment
-  env.Append(CPPPATH = inc_paths(env))
+  env.Append(CPPPATH = inc_paths(env, host, device))
   
-  env.Append(CCFLAGS = cc_compiler_flags(env.subst('$CXX'), env['mode'], host, device, env['Wall'], env['Werror']))
+  env.Append(CCFLAGS = cc_compiler_flags(env.subst('$CXX'), env['mode'], env['PLATFORM'], host, device, env['Wall'], env['Werror']))
   
   env.Append(NVCCFLAGS = nv_compiler_flags(env['mode'], device, env['arch']))
   
   env.Append(LINKFLAGS = linker_flags(env.subst('$LINK'), env['mode'], env['PLATFORM'], device))
   
-  env.Append(LIBPATH = lib_paths(env))
+  env.Append(LIBPATH = lib_paths(env, host, device))
   
   env.Append(LIBS = libs(env, env.subst('$CXX'), host, device))
   

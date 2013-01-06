@@ -29,17 +29,41 @@
 namespace thrust
 {
 
+
+template<typename System, typename BidirectionalIterator>
+  void reverse(const thrust::detail::dispatchable_base<System> &system,
+               BidirectionalIterator first,
+               BidirectionalIterator last)
+{
+  using thrust::system::detail::generic::reverse;
+  return reverse(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last);
+} // end reverse()
+
+
+template<typename System, typename BidirectionalIterator, typename OutputIterator>
+  OutputIterator reverse_copy(const thrust::detail::dispatchable_base<System> &system,
+                              BidirectionalIterator first,
+                              BidirectionalIterator last,
+                              OutputIterator result)
+{
+  using thrust::system::detail::generic::reverse_copy;
+  return reverse_copy(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+} // end reverse_copy()
+
+
 template<typename BidirectionalIterator>
   void reverse(BidirectionalIterator first,
                BidirectionalIterator last)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::reverse;
 
-  typedef typename thrust::iterator_system<BidirectionalIterator>::type system;
+  typedef typename thrust::iterator_system<BidirectionalIterator>::type System;
 
-  return reverse(select_system(system()), first, last);
+  System system;
+
+  return thrust::reverse(select_system(system), first, last);
 } // end reverse()
+
 
 template<typename BidirectionalIterator,
          typename OutputIterator>
@@ -48,13 +72,16 @@ template<typename BidirectionalIterator,
                               OutputIterator result)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::reverse_copy;
 
-  typedef typename thrust::iterator_system<BidirectionalIterator>::type system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type        system2;
+  typedef typename thrust::iterator_system<BidirectionalIterator>::type System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type        System2;
 
-  return reverse_copy(select_system(system1(),system2()), first, last, result);
+  System1 system1;
+  System2 system2;
+
+  return thrust::reverse_copy(select_system(system1,system2), first, last, result);
 } // end reverse_copy()
+
 
 } // end thrust
 

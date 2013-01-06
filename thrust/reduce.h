@@ -22,12 +22,79 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-
-#include <thrust/pair.h>
+#include <thrust/detail/dispatchable.h>
 #include <thrust/iterator/iterator_traits.h>
+#include <thrust/pair.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename InputIterator>
+  typename thrust::iterator_traits<InputIterator>::value_type
+    reduce(const thrust::detail::dispatchable_base<System> &system, InputIterator first, InputIterator last);
+
+template<typename System, typename InputIterator, typename T>
+  T reduce(const thrust::detail::dispatchable_base<System> &system,
+           InputIterator first,
+           InputIterator last,
+           T init);
+
+template<typename System,
+         typename InputIterator,
+         typename T,
+         typename BinaryFunction>
+  T reduce(const thrust::detail::dispatchable_base<System> &system,
+           InputIterator first,
+           InputIterator last,
+           T init,
+           BinaryFunction binary_op);
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator1,
+         typename OutputIterator2>
+  thrust::pair<OutputIterator1,OutputIterator2>
+  reduce_by_key(const thrust::detail::dispatchable_base<System> &system,
+                InputIterator1 keys_first, 
+                InputIterator1 keys_last,
+                InputIterator2 values_first,
+                OutputIterator1 keys_output,
+                OutputIterator2 values_output);
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator1,
+         typename OutputIterator2,
+         typename BinaryPredicate>
+  thrust::pair<OutputIterator1,OutputIterator2>
+  reduce_by_key(const thrust::detail::dispatchable_base<System> &system,
+                InputIterator1 keys_first, 
+                InputIterator1 keys_last,
+                InputIterator2 values_first,
+                OutputIterator1 keys_output,
+                OutputIterator2 values_output,
+                BinaryPredicate binary_pred);
+
+template<typename System,
+         typename InputIterator1,
+         typename InputIterator2,
+         typename OutputIterator1,
+         typename OutputIterator2,
+         typename BinaryPredicate,
+         typename BinaryFunction>
+  thrust::pair<OutputIterator1,OutputIterator2>
+  reduce_by_key(const thrust::detail::dispatchable_base<System> &system,
+                InputIterator1 keys_first, 
+                InputIterator1 keys_last,
+                InputIterator2 values_first,
+                OutputIterator1 keys_output,
+                OutputIterator2 values_output,
+                BinaryPredicate binary_pred,
+                BinaryFunction binary_op);
+
 
 /*! \addtogroup reductions
  *  \{
@@ -196,6 +263,8 @@ template<typename InputIterator,
  *  \tparam OutputIterator2 is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a> and
  *          and \p InputIterator2's \c value_type is convertible to \c OutputIterator2's \c value_type.
  *
+ *  \pre The input ranges shall not overlap either output range.
+ *
  *  The following code snippet demonstrates how to use \p reduce_by_key to
  *  compact a sequence of key/value pairs and sum values with equal keys.
  *
@@ -255,6 +324,8 @@ template <typename InputIterator1,
  *  \tparam OutputIterator2 is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a> and
  *          and \p InputIterator2's \c value_type is convertible to \c OutputIterator2's \c value_type.
  *  \tparam BinaryPredicate is a model of <a href="http://www.sgi.com/tech/stl/BinaryPredicate.html">Binary Predicate</a>.
+ *
+ *  \pre The input ranges shall not overlap either output range.
  *
  *  The following code snippet demonstrates how to use \p reduce_by_key to
  *  compact a sequence of key/value pairs and sum values with equal keys.
@@ -324,6 +395,8 @@ template <typename InputIterator1,
  *  \tparam BinaryPredicate is a model of <a href="http://www.sgi.com/tech/stl/BinaryPredicate.html">Binary Predicate</a>.
  *  \tparam BinaryFunction is a model of <a href="http://www.sgi.com/tech/stl/BinaryFunction.html">Binary Function</a>
  *          and \c BinaryFunction's \c result_type is convertible to \c OutputIterator2's \c value_type.
+ *
+ *  \pre The input ranges shall not overlap either output range.
  *
  *  The following code snippet demonstrates how to use \p reduce_by_key to
  *  compact a sequence of key/value pairs and sum values with equal keys.

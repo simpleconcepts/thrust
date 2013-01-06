@@ -22,19 +22,33 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename InputIterator, typename OutputIterator>
+OutputIterator adjacent_difference(const thrust::detail::dispatchable_base<System> &system,
+                                   InputIterator first, InputIterator last, 
+                                   OutputIterator result);
+
+template<typename System, typename InputIterator, typename OutputIterator, typename BinaryFunction>
+OutputIterator adjacent_difference(const thrust::detail::dispatchable_base<System> &system,
+                                   InputIterator first, InputIterator last,
+                                   OutputIterator result,
+                                   BinaryFunction binary_op);
+
 
 /*! \addtogroup transformations Transformations
  *  \{
  */
 
 /*! \p adjacent_difference calculates the differences of adjacent elements in the
- *  range <tt>[first, last)</tt>. That is, <tt>*first</tt> is assigned to
- *  <tt>*result</tt>, and, for each iterator \p i in the range
- *  <tt>[first + 1, last)</tt>, the difference of <tt>*i</tt> and <tt>*(i - 1)</tt>
- *  is assigned to <tt>*(result + (i - first))</tt>.
+ *  range <tt>[first, last)</tt>. That is, <tt>\*first</tt> is assigned to
+ *  <tt>\*result</tt>, and, for each iterator \p i in the range
+ *  <tt>[first + 1, last)</tt>, the difference of <tt>\*i</tt> and <tt>*(i - 1)</tt>
+ *  is assigned to <tt>\*(result + (i - first))</tt>.
  *
  *  This version of \p adjacent_difference uses <tt>operator-</tt> to calculate
  *  differences.
@@ -49,6 +63,9 @@ namespace thrust
  *          and \p InputIterator's \c value_type is convertible to a type in \p OutputIterator's set of \c value_types,
  *          and the return type of <tt>x - y</tt> is convertible to a type in \p OutputIterator's set of \c value_types.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
+ *
+ *  \remark Note that \p result is permitted to be the same iterator as \p first. This is
+ *          useful for computing differences "in place".
  *
  *  The following code snippet demonstrates how to use \p adjacent_difference to compute
  *  the difference between adjacent elements of a range.
@@ -68,9 +85,6 @@ namespace thrust
  *
  *  \see http://www.sgi.com/tech/stl/adjacent_difference.html
  *  \see inclusive_scan
- *
- *  \note Note that \p result is permitted to be the same iterator as \p first. This is
- *        useful for computing differences "in place".
  */
 template <typename InputIterator, typename OutputIterator>
 OutputIterator adjacent_difference(InputIterator first, InputIterator last, 
@@ -78,9 +92,9 @@ OutputIterator adjacent_difference(InputIterator first, InputIterator last,
 
 /*! \p adjacent_difference calculates the differences of adjacent elements in the
  *  range <tt>[first, last)</tt>. That is, <tt>*first</tt> is assigned to
- *  <tt>*result</tt>, and, for each iterator \p i in the range
- *  <tt>[first + 1, last)</tt>, <tt>binary_op(*i, *(i - 1))</tt> is assigned to
- *  <tt>*(result + (i - first))</tt>.
+ *  <tt>\*result</tt>, and, for each iterator \p i in the range
+ *  <tt>[first + 1, last)</tt>, <tt>binary_op(\*i, \*(i - 1))</tt> is assigned to
+ *  <tt>\*(result + (i - first))</tt>.
  *  
  *  This version of \p adjacent_difference uses the binary function \p binary_op to
  *  calculate differences.
@@ -96,6 +110,9 @@ OutputIterator adjacent_difference(InputIterator first, InputIterator last,
  *          and \p InputIterator's \c value_type is convertible to a type in \p OutputIterator's set of \c value_types.
  *  \tparam OutputIterator is a model of <a href="http://www.sgi.com/tech/stl/OutputIterator.html">Output Iterator</a>.
  *  \tparam BinaryFunction's \c result_type is convertible to a type in \p OutputIterator's set of \c value_types.
+ *
+ *  \remark Note that \p result is permitted to be the same iterator as \p first. This is
+ *          useful for computing differences "in place".
  *
  *  The following code snippet demonstrates how to use \p adjacent_difference to compute
  *  the sum between adjacent elements of a range.
@@ -116,9 +133,6 @@ OutputIterator adjacent_difference(InputIterator first, InputIterator last,
  *
  *  \see http://www.sgi.com/tech/stl/adjacent_difference.html
  *  \see inclusive_scan
- *
- *  \note Note that \p result is permitted to be the same iterator as \p first. This is
- *        useful for computing differences "in place".
  */
 template <typename InputIterator, typename OutputIterator, typename BinaryFunction>
 OutputIterator adjacent_difference(InputIterator first, InputIterator last,

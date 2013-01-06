@@ -18,7 +18,6 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/detail/generic/tag.h>
 
 namespace thrust
 {
@@ -29,8 +28,8 @@ namespace detail
 namespace generic
 {
 
-template <typename InputIterator, typename Distance>
-void advance(tag, InputIterator& i, Distance n);
+template<typename InputIterator, typename Distance>
+void advance(InputIterator& i, Distance n);
 
 } // end namespace generic
 } // end namespace detail

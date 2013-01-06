@@ -22,13 +22,11 @@
 // ADL targets
 
 #include <thrust/system/cpp/detail/adjacent_difference.h>
-#include <thrust/system/cpp/detail/advance.h>
 #include <thrust/system/cpp/detail/assign_value.h>
 #include <thrust/system/cpp/detail/binary_search.h>
 #include <thrust/system/cpp/detail/copy.h>
 #include <thrust/system/cpp/detail/copy_if.h>
 #include <thrust/system/cpp/detail/count.h>
-#include <thrust/system/cpp/detail/distance.h>
 #include <thrust/system/cpp/detail/equal.h>
 #include <thrust/system/cpp/detail/extrema.h>
 #include <thrust/system/cpp/detail/fill.h>
@@ -56,6 +54,7 @@
 #include <thrust/system/cpp/detail/set_operations.h>
 #include <thrust/system/cpp/detail/sort.h>
 #include <thrust/system/cpp/detail/swap_ranges.h>
+#include <thrust/system/cpp/detail/tabulate.h>
 #include <thrust/system/cpp/detail/transform.h>
 #include <thrust/system/cpp/detail/transform_reduce.h>
 #include <thrust/system/cpp/detail/transform_scan.h>

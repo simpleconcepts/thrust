@@ -29,6 +29,21 @@
 namespace thrust
 {
 
+
+template<typename System,
+         typename InputIterator,
+         typename UnaryFunction>
+  InputIterator for_each(const thrust::detail::dispatchable_base<System> &system,
+                         InputIterator first,
+                         InputIterator last,
+                         UnaryFunction f)
+{
+  using thrust::system::detail::generic::for_each;
+
+  return for_each(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, f);
+}
+
+
 template<typename InputIterator,
          typename UnaryFunction>
 InputIterator for_each(InputIterator first,
@@ -36,12 +51,24 @@ InputIterator for_each(InputIterator first,
                        UnaryFunction f)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::for_each;
+  typedef typename thrust::iterator_system<InputIterator>::type System;
 
-  typedef typename thrust::iterator_system<InputIterator>::type system;
-
-  return for_each(select_system(system()), first, last, f);
+  System system;
+  return thrust::for_each(select_system(system), first, last, f);
 } // end for_each()
+
+
+template<typename System, typename InputIterator, typename Size, typename UnaryFunction>
+  InputIterator for_each_n(const thrust::detail::dispatchable_base<System> &system,
+                           InputIterator first,
+                           Size n,
+                           UnaryFunction f)
+{
+  using thrust::system::detail::generic::for_each_n;
+
+  return for_each_n(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, n, f);
+} // end for_each_n()
+
 
 template<typename InputIterator,
          typename Size,
@@ -51,12 +78,13 @@ InputIterator for_each_n(InputIterator first,
                          UnaryFunction f)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::for_each_n;
 
-  typedef typename thrust::iterator_system<InputIterator>::type system;
+  typedef typename thrust::iterator_system<InputIterator>::type System;
 
-  return for_each_n(select_system(system()), first, n, f);
+  System system;
+  return thrust::for_each_n(select_system(system), first, n, f);
 } // end for_each_n()
+
 
 } // end namespace thrust
 

@@ -28,6 +28,43 @@
 namespace thrust
 {
 
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename UnaryFunction,
+         typename AssociativeOperator>
+  OutputIterator transform_inclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                          InputIterator first,
+                                          InputIterator last,
+                                          OutputIterator result,
+                                          UnaryFunction unary_op,
+                                          AssociativeOperator binary_op)
+{
+  using thrust::system::detail::generic::transform_inclusive_scan;
+  return transform_inclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, unary_op, binary_op);
+} // end transform_inclusive_scan()
+
+
+template<typename System,
+         typename InputIterator,
+         typename OutputIterator,
+         typename UnaryFunction,
+         typename T,
+         typename AssociativeOperator>
+  OutputIterator transform_exclusive_scan(const thrust::detail::dispatchable_base<System> &system,
+                                          InputIterator first,
+                                          InputIterator last,
+                                          OutputIterator result,
+                                          UnaryFunction unary_op,
+                                          T init,
+                                          AssociativeOperator binary_op)
+{
+  using thrust::system::detail::generic::transform_exclusive_scan;
+  return transform_exclusive_scan(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, unary_op, init, binary_op);
+} // end transform_exclusive_scan()
+
+
 template<typename InputIterator,
          typename OutputIterator,
          typename UnaryFunction,
@@ -39,12 +76,14 @@ template<typename InputIterator,
                                           BinaryFunction binary_op)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::transform_inclusive_scan;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  return transform_inclusive_scan(select_system(system1(),system2()), first, last, result, unary_op, binary_op);
+  System1 system1;
+  System2 system2;
+
+  return thrust::transform_inclusive_scan(select_system(system1,system2), first, last, result, unary_op, binary_op);
 } // end transform_inclusive_scan()
 
 
@@ -61,13 +100,16 @@ template<typename InputIterator,
                                           AssociativeOperator binary_op)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::transform_exclusive_scan;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  return transform_exclusive_scan(select_system(system1(),system2()), first, last, result, unary_op, init, binary_op);
+  System1 system1;
+  System2 system2;
+
+  return thrust::transform_exclusive_scan(select_system(system1,system2), first, last, result, unary_op, init, binary_op);
 } // end transform_exclusive_scan()
+
 
 } // end namespace thrust
 

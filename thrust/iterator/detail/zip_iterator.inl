@@ -70,6 +70,7 @@ template <typename IteratorTuple>
 } // end zip_iterator::dereference()
 
 
+__thrust_hd_warning_disable__
 template <typename IteratorTuple>
   template <typename OtherIteratorTuple>
     bool zip_iterator<IteratorTuple>
@@ -85,10 +86,14 @@ template <typename IteratorTuple>
 {
   using namespace detail::tuple_impl_specific;
 
+  // XXX note that we use a pointer to System to dispatch to avoid
+  //     default construction of a System
+  typename thrust::iterator_system<zip_iterator>::type *use_me_to_dispatch = 0;
+
   // dispatch on system
   tuple_for_each(m_iterator_tuple,
                  detail::advance_iterator<typename super_t::difference_type>(n),
-                 typename thrust::iterator_system<zip_iterator>::type());
+                 use_me_to_dispatch);
 } // end zip_iterator::advance()
 
 
@@ -98,9 +103,13 @@ template <typename IteratorTuple>
 {
   using namespace detail::tuple_impl_specific;
 
+  // XXX note that we use a pointer to System to dispatch to avoid
+  //     default construction of a System
+  typename thrust::iterator_system<zip_iterator>::type *use_me_to_dispatch = 0;
+
   // dispatch on system
   tuple_for_each(m_iterator_tuple, detail::increment_iterator(),
-                 typename thrust::iterator_system<zip_iterator>::type());
+                 use_me_to_dispatch);
 } // end zip_iterator::increment()
 
 
@@ -110,12 +119,17 @@ template <typename IteratorTuple>
 {
   using namespace detail::tuple_impl_specific;
 
+  // XXX note that we use a pointer to System to dispatch to avoid
+  //     default construction of a System
+  typename thrust::iterator_system<zip_iterator>::type *use_me_to_dispatch = 0;
+
   // dispatch on system
   tuple_for_each(m_iterator_tuple, detail::decrement_iterator(),
-                 typename thrust::iterator_system<zip_iterator>::type());
+                 use_me_to_dispatch);
 } // end zip_iterator::decrement()
 
 
+__thrust_hd_warning_disable__
 template <typename IteratorTuple>
   template <typename OtherIteratorTuple>
     typename zip_iterator<IteratorTuple>::super_t::difference_type

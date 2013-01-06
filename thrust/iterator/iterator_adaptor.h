@@ -15,7 +15,7 @@
  */
 
 
-/*! \file iterator_adaptor.h
+/*! \file thrust/iterator/iterator_adaptor.h
  *  \brief An iterator which adapts a base iterator
  */
 
@@ -40,78 +40,169 @@
 namespace thrust
 {
 
-namespace experimental
-{
+/*! \addtogroup iterators
+ *  \{
+ */
 
-template <
-      typename Derived
-    , typename Base
-    , typename Pointer
-    // XXX nvcc can't handle these defaults at the moment
-    //, typename Value                = use_default
-    //, typename CategoryOrSystem      = use_default
-    //, typename CategoryOrTraversal  = use_default
-    //, typename Reference            = use_default
-    //, typename Difference           = use_default
-    , typename Value
-    , typename System
-    , typename Traversal
-    , typename Reference
-    , typename Difference = use_default
-  >
+/*! \addtogroup fancyiterator Fancy Iterators
+ *  \ingroup iterators
+ *  \{
+ */
+
+/*! \p iterator_adaptor is an iterator which adapts an existing type of iterator to create a new type of
+ *  iterator. Most of Thrust's fancy iterators are defined via inheritance from \p iterator_adaptor.
+ *  While composition of these existing Thrust iterators is often sufficient for expressing the desired
+ *  functionality, it is occasionally more straightforward to derive from \p iterator_adaptor directly.
+ *
+ *  To see how to use \p iterator_adaptor to create a novel iterator type, let's examine how to use it to
+ *  define our own version of \p transform_iterator, a fancy iterator which fuses the application of
+ *  a unary function with an iterator dereference:
+ *
+ *  \code
+ *  #include <thrust/iterator/iterator_adaptor.h>
+ *
+ *  // derive my_transform_iterator from iterator_adaptor
+ *  template<typename Function, typename Iterator>
+ *    class my_transform_iterator
+ *      : public thrust::iterator_adaptor<
+ *          my_transform_iterator<Function, Iterator>, // the first template parameter is the name of the type we're creating
+ *          Iterator,                                  // the second template parameter is the name of the iterator we're adapting
+ *          typename Function::result_type,            // the third template parameter is the name of the iterator's value_type -- it's simply the function's result_type.
+ *          thrust::use_default,                       // the fourth template parameter is the name of the iterator's system. use_default will use the same system as the base iterator.
+ *          thrust::use_default,                       // the fifth template parameter is the name of the iterator's traversal. use_default will use the same traversal as the base iterator.
+ *          typename Function::result_type             // the sixth template parameter is the name of the iterator's reference. Like value_type, it's simply the function's result_type.
+ *        >
+ *  {
+ *    public:
+ *      // shorthand for the name of the iterator_adaptor we're deriving from
+ *      typedef thrust::iterator_adaptor<
+ *        my_transform_iterator<Function, Iterator>,
+ *        Iterator,
+ *        typename Function::result_type,
+ *        thrust::use_default,
+ *        thrust::use_default,
+ *        typename Function::result_type
+ *      > super_t;
+ *
+ *      __host__ __device__
+ *      my_transform_iterator(const Iterator &x, Function f) : super_t(x), m_f(f) {}
+ *
+ *      // other assorted constructors might go here
+ *      ...
+ *
+ *      // befriend thrust::iterator_core_access to allow it access to the private interface below
+ *      friend class thrust::iterator_core_access;
+ *
+ *    private:
+ *      // here we define what it means to dereference my_transform_iterator
+ *      // it is private because only thrust::iterator_core_access needs access to it
+ *      __host__ __device__
+ *      typename super_t::reference dereference() const
+ *      {
+ *        // when my_transform_iterator is dereferenced, it dereferences the base iterator
+ *        // and applies the unary function
+ *        return m_f(*this->base());
+ *      }
+ *
+ *      // the unary function
+ *      Function m_f;
+ *  };
+ *  \endcode
+ *
+ *  Except for the first two, \p iterator_adaptor's template parameters are optional. When omitted, or when the
+ *  user specifies \p thrust::use_default in its place, \p iterator_adaptor will use a default type inferred from \p Base.
+ *
+ *  \p iterator_adaptor's functionality is derived from and generally equivalent to \p boost::iterator_adaptor.
+ *  The exception is Thrust's addition of the template parameter \p System, which is necessary to allow Thrust
+ *  to dispatch an algorithm to one of several parallel backend systems.
+ *
+ *  Interested users may refer to <tt>boost::iterator_adaptor</tt>'s documentation for further usage examples.
+ */
+template<typename Derived,
+         typename Base,
+         typename Value      = use_default,
+         typename System     = use_default,
+         typename Traversal  = use_default,
+         typename Reference  = use_default,
+         typename Difference = use_default>
   class iterator_adaptor:
     public detail::iterator_adaptor_base<
-      Derived, Base, Pointer, Value, System, Traversal, Reference, Difference
+      Derived, Base, Value, System, Traversal, Reference, Difference
     >::type
 {
-    friend class iterator_core_access;
+  /*! \cond
+   */
+
+    friend class thrust::iterator_core_access;
 
   protected:
     typedef typename detail::iterator_adaptor_base<
-        Derived, Base, Pointer, Value, System, Traversal, Reference, Difference
+        Derived, Base, Value, System, Traversal, Reference, Difference
     >::type super_t;
+
+  /*! \endcond
+   */
   
   public:
+    /*! \p iterator_adaptor's default constructor does nothing.
+     */
     __host__ __device__
     iterator_adaptor(){}
 
+    /*! This constructor copies from a given instance of the \p Base iterator.
+     */
     __host__ __device__
     explicit iterator_adaptor(Base const& iter)
       : m_iterator(iter)
     {}
 
+    /*! The type of iterator this \p iterator_adaptor's \p adapts.
+     */
     typedef Base       base_type;
-    // XXX BUG: why do we have to declare this here?  it's supposed to be published in super_t
+                                                                                              
+    /*! \cond
+     */
     typedef typename super_t::reference reference;
-    // XXX BUG: why do we have to declare this here?  it's supposed to be published in super_t
+                                                                                              
     typedef typename super_t::difference_type difference_type;
+    /*! \endcond
+     */
 
+    /*! \return A \p const reference to the \p Base iterator this \p iterator_adaptor adapts.
+     */
     __host__ __device__
     Base const& base() const
     { return m_iterator; }
 
   protected:
-    typedef iterator_adaptor iterator_adaptor_;
-
+    /*! \return A \p const reference to the \p Base iterator this \p iterator_adaptor adapts.
+     */
     __host__ __device__
     Base const& base_reference() const
     { return m_iterator; }
 
+    /*! \return A mutable reference to the \p Base iterator this \p iterator_adaptor adapts.
+     */
     __host__ __device__
     Base& base_reference()
     { return m_iterator; }
 
+    /*! \cond
+     */
   private: // Core iterator interface for iterator_facade
 
+    __thrust_hd_warning_disable__
     __host__ __device__
     typename iterator_adaptor::reference dereference() const
     { return *m_iterator; }
 
-    template<typename OtherDerived, typename OtherIterator, typename P, typename V, typename S, typename T, typename R, typename D>
+    __thrust_hd_warning_disable__
+    template<typename OtherDerived, typename OtherIterator, typename V, typename S, typename T, typename R, typename D>
     __host__ __device__
-    bool equal(iterator_adaptor<OtherDerived, OtherIterator, P, V, S, T, R, D> const& x) const
+    bool equal(iterator_adaptor<OtherDerived, OtherIterator, V, S, T, R, D> const& x) const
     { return m_iterator == x.base(); }
 
+    __thrust_hd_warning_disable__
     __host__ __device__
     void advance(typename iterator_adaptor::difference_type n)
     {
@@ -119,10 +210,12 @@ template <
       m_iterator += n;
     }
 
+    __thrust_hd_warning_disable__
     __host__ __device__
     void increment()
     { ++m_iterator; }
 
+    __thrust_hd_warning_disable__
     __host__ __device__
     void decrement()
     {
@@ -130,16 +223,24 @@ template <
       --m_iterator;
     }
 
-    template<typename OtherDerived, typename OtherIterator, typename P, typename V, typename S, typename T, typename R, typename D>
+    __thrust_hd_warning_disable__
+    template<typename OtherDerived, typename OtherIterator, typename V, typename S, typename T, typename R, typename D>
     __host__ __device__
-    typename iterator_adaptor::difference_type distance_to(iterator_adaptor<OtherDerived, OtherIterator, P, V, S, T, R, D> const& y) const
+    typename iterator_adaptor::difference_type distance_to(iterator_adaptor<OtherDerived, OtherIterator, V, S, T, R, D> const& y) const
     { return y.base() - m_iterator; }
 
   private:
-    Base m_iterator; // exposition only
+    Base m_iterator;
+
+    /*! \endcond
+     */
 }; // end iterator_adaptor
 
-} // end experimental
+/*! \} // end fancyiterators
+ */
+
+/*! \} // end iterators
+ */
 
 } // end thrust
 

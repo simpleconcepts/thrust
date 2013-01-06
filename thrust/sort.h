@@ -22,9 +22,106 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename RandomAccessIterator>
+  void sort(const thrust::detail::dispatchable_base<System> &system,
+            RandomAccessIterator first,
+            RandomAccessIterator last);
+
+
+template<typename System,
+         typename RandomAccessIterator,
+         typename StrictWeakOrdering>
+  void sort(const thrust::detail::dispatchable_base<System> &system,
+            RandomAccessIterator first,
+            RandomAccessIterator last,
+            StrictWeakOrdering comp);
+
+
+template<typename System, typename RandomAccessIterator>
+  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator first,
+                   RandomAccessIterator last);
+
+
+template<typename System,
+         typename RandomAccessIterator,
+         typename StrictWeakOrdering>
+  void stable_sort(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator first,
+                   RandomAccessIterator last,
+                   StrictWeakOrdering comp);
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator1 keys_first,
+                   RandomAccessIterator1 keys_last,
+                   RandomAccessIterator2 values_first);
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2,
+         typename StrictWeakOrdering>
+  void sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                   RandomAccessIterator1 keys_first,
+                   RandomAccessIterator1 keys_last,
+                   RandomAccessIterator2 values_first,
+                   StrictWeakOrdering comp);
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2>
+  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                          RandomAccessIterator1 keys_first,
+                          RandomAccessIterator1 keys_last,
+                          RandomAccessIterator2 values_first);
+
+
+template<typename System,
+         typename RandomAccessIterator1,
+         typename RandomAccessIterator2,
+         typename StrictWeakOrdering>
+  void stable_sort_by_key(const thrust::detail::dispatchable_base<System> &system,
+                          RandomAccessIterator1 keys_first,
+                          RandomAccessIterator1 keys_last,
+                          RandomAccessIterator2 values_first,
+                          StrictWeakOrdering comp);
+
+
+template<typename System, typename ForwardIterator>
+  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+                 ForwardIterator first,
+                 ForwardIterator last);
+
+
+template<typename System, typename ForwardIterator, typename Compare>
+  bool is_sorted(const thrust::detail::dispatchable_base<System> &system,
+                 ForwardIterator first,
+                 ForwardIterator last,
+                 Compare comp);
+
+
+template<typename System, typename ForwardIterator>
+  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+                                  ForwardIterator first,
+                                  ForwardIterator last);
+
+
+template<typename System, typename ForwardIterator, typename Compare>
+  ForwardIterator is_sorted_until(const thrust::detail::dispatchable_base<System> &system,
+                                  ForwardIterator first,
+                                  ForwardIterator last,
+                                  Compare comp);
 
 
 /*! \addtogroup sorting
@@ -238,6 +335,8 @@ template<typename RandomAccessIterator,
  *  \tparam RandomAccessIterator2 is a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.hml">Random Access Iterator</a>,
  *          and \p RandomAccessIterator2 is mutable.
  *
+ *  \pre The range <tt>[keys_first, keys_last))</tt> shall not overlap the range <tt>[values_first, values_first + (keys_last - keys_first))</tt>.
+ *
  *  The following code snippet demonstrates how to use \p sort_by_key to sort
  *  an array of character values using integers as sorting keys.
  *
@@ -291,6 +390,8 @@ template<typename RandomAccessIterator1,
  *  \tparam RandomAccessIterator2 is a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.hml">Random Access Iterator</a>,
  *          and \p RandomAccessIterator2 is mutable.
  *  \tparam StrictWeakOrdering is a model of <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html">Strict Weak Ordering</a>.
+ *
+ *  \pre The range <tt>[keys_first, keys_last))</tt> shall not overlap the range <tt>[values_first, values_first + (keys_last - keys_first))</tt>.
  *
  *  The following code snippet demonstrates how to use \p sort_by_key to sort
  *  an array of character values using integers as sorting keys.  The keys
@@ -349,6 +450,8 @@ template<typename RandomAccessIterator1,
  *  \tparam RandomAccessIterator2 is a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.hml">Random Access Iterator</a>,
  *          and \p RandomAccessIterator2 is mutable.
  *
+ *  \pre The range <tt>[keys_first, keys_last))</tt> shall not overlap the range <tt>[values_first, values_first + (keys_last - keys_first))</tt>.
+ *
  *  The following code snippet demonstrates how to use \p stable_sort_by_key to sort
  *  an array of characters using integers as sorting keys.
  *
@@ -404,6 +507,8 @@ template<typename RandomAccessIterator1,
  *  \tparam RandomAccessIterator2 is a model of <a href="http://www.sgi.com/tech/stl/RandomAccessIterator.hml">Random Access Iterator</a>,
  *          and \p RandomAccessIterator2 is mutable.
  *  \tparam StrictWeakOrdering is a model of <a href="http://www.sgi.com/tech/stl/StrictWeakOrdering.html">Strict Weak Ordering</a>.
+ *
+ *  \pre The range <tt>[keys_first, keys_last))</tt> shall not overlap the range <tt>[values_first, values_first + (keys_last - keys_first))</tt>.
  *
  *  The following code snippet demonstrates how to use \p sort_by_key to sort
  *  an array of character values using integers as sorting keys.  The keys

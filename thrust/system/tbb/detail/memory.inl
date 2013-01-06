@@ -87,6 +87,13 @@ inline pointer<void> malloc(std::size_t n)
   return detail::malloc_workaround(cpp::tag(), n);
 } // end malloc()
 
+template<typename T>
+pointer<T> malloc(std::size_t n)
+{
+  pointer<void> raw_ptr = thrust::system::tbb::malloc(sizeof(T) * n);
+  return pointer<T>(reinterpret_cast<T*>(raw_ptr.get()));
+} // end malloc()
+
 inline void free(pointer<void> ptr)
 {
   // XXX this is how we'd like to implement this function,
@@ -99,20 +106,5 @@ inline void free(pointer<void> ptr)
 
 } // end tbb
 } // end system
-
-namespace detail
-{
-
-// XXX iterator_facade tries to instantiate the Reference
-//     type when ctbbuting the answer to is_convertible<Reference,Value>
-//     we can't do that at that point because reference
-//     is not ctbblete
-//     WAR the problem by specializing is_convertible
-template<typename T>
-  struct is_convertible<thrust::tbb::reference<T>, T>
-    : thrust::detail::true_type
-{};
-
-} // end detail
 } // end thrust
 

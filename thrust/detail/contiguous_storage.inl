@@ -33,8 +33,8 @@ namespace detail
 
 template<typename T, typename Alloc>
   contiguous_storage<T,Alloc>
-    ::contiguous_storage(void)
-      :m_allocator(),
+    ::contiguous_storage(const Alloc &alloc)
+      :m_allocator(alloc),
        m_begin(pointer(static_cast<T*>(0))),
        m_size(0)
 {
@@ -43,8 +43,8 @@ template<typename T, typename Alloc>
 
 template<typename T, typename Alloc>
   contiguous_storage<T,Alloc>
-    ::contiguous_storage(size_type n)
-      :m_allocator(),
+    ::contiguous_storage(size_type n, const Alloc &alloc)
+      :m_allocator(alloc),
        m_begin(pointer(static_cast<T*>(0))),
        m_size(0)
 {
@@ -71,7 +71,7 @@ template<typename T, typename Alloc>
     contiguous_storage<T,Alloc>
       ::max_size(void) const
 {
-  return m_allocator.max_size();
+  return alloc_traits::max_size(m_allocator);
 } // end contiguous_storage::max_size()
 
 template<typename T, typename Alloc>
@@ -185,13 +185,46 @@ template<typename T, typename Alloc>
 } // end contiguous_storage::uninitialized_fill()
 
 template<typename T, typename Alloc>
+  template<typename System, typename InputIterator>
+    typename contiguous_storage<T,Alloc>::iterator
+      contiguous_storage<T,Alloc>
+        ::uninitialized_copy(thrust::dispatchable<System> &from_system, InputIterator first, InputIterator last, iterator result)
+{
+  return iterator(copy_construct_range(from_system, m_allocator, first, last, result.base()));
+} // end contiguous_storage::uninitialized_copy()
+
+template<typename T, typename Alloc>
   template<typename InputIterator>
     typename contiguous_storage<T,Alloc>::iterator
       contiguous_storage<T,Alloc>
         ::uninitialized_copy(InputIterator first, InputIterator last, iterator result)
 {
-  return iterator(copy_construct_range(m_allocator, first, last, result.base()));
+  // XXX assumes InputIterator's associated System is default-constructible
+  typename thrust::iterator_system<InputIterator>::type from_system;
+
+  return iterator(copy_construct_range(from_system, m_allocator, first, last, result.base()));
 } // end contiguous_storage::uninitialized_copy()
+
+template<typename T, typename Alloc>
+  template<typename System, typename InputIterator, typename Size>
+    typename contiguous_storage<T,Alloc>::iterator
+      contiguous_storage<T,Alloc>
+        ::uninitialized_copy_n(thrust::dispatchable<System> &from_system, InputIterator first, Size n, iterator result)
+{
+  return iterator(copy_construct_range_n(from_system, m_allocator, first, n, result.base()));
+} // end contiguous_storage::uninitialized_copy_n()
+
+template<typename T, typename Alloc>
+  template<typename InputIterator, typename Size>
+    typename contiguous_storage<T,Alloc>::iterator
+      contiguous_storage<T,Alloc>
+        ::uninitialized_copy_n(InputIterator first, Size n, iterator result)
+{
+  // XXX assumes InputIterator's associated System is default-constructible
+  typename thrust::iterator_system<InputIterator>::type from_system;
+
+  return iterator(copy_construct_range_n(from_system, m_allocator, first, n, result.base()));
+} // end contiguous_storage::uninitialized_copy_n()
 
 template<typename T, typename Alloc>
   void contiguous_storage<T,Alloc>

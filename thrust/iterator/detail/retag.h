@@ -28,12 +28,12 @@ namespace detail
 
 
 // we can retag an iterator if FromTag converts to ToTag
-// or if FromTag is a base class of ToTag
+// or vice versa
 template<typename FromTag, typename ToTag>
   struct is_retaggable
     : integral_constant<
         bool,
-        (is_convertible<FromTag,ToTag>::value || is_base_of<FromTag,ToTag>::value)
+        (is_convertible<FromTag,ToTag>::value || is_convertible<ToTag,FromTag>::value)
       >
 {};
 
@@ -117,10 +117,10 @@ template<typename Tag, typename T, typename OtherTag>
     Tag,
     thrust::pointer<T,Tag>
   >::type
-    reinterpret_tag(thrust::pointer<T,OtherTag> ptr)
+    retag(thrust::pointer<T,OtherTag> ptr)
 {
   return reinterpret_tag<Tag>(ptr);
-} // end reinterpret_tag()
+} // end retag()
 
 
 // avoid deeply-nested tagged_iterator

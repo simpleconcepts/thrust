@@ -27,18 +27,45 @@
 namespace thrust
 {
 
+
+template <typename System, typename InputIterator, typename OutputIterator>
+OutputIterator adjacent_difference(const thrust::detail::dispatchable_base<System> &system,
+                                   InputIterator first, InputIterator last, 
+                                   OutputIterator result)
+{
+  using thrust::system::detail::generic::adjacent_difference;
+
+  return adjacent_difference(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result);
+} // end adjacent_difference()
+
+
+template <typename System, typename InputIterator, typename OutputIterator, typename BinaryFunction>
+OutputIterator adjacent_difference(const thrust::detail::dispatchable_base<System> &system,
+                                   InputIterator first, InputIterator last, 
+                                   OutputIterator result,
+                                   BinaryFunction binary_op)
+{
+  using thrust::system::detail::generic::adjacent_difference;
+
+  return adjacent_difference(thrust::detail::derived_cast(thrust::detail::strip_const(system)), first, last, result, binary_op);
+} // end adjacent_difference()
+
+
 template <typename InputIterator, typename OutputIterator>
 OutputIterator adjacent_difference(InputIterator first, InputIterator last, 
                                    OutputIterator result)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::adjacent_difference;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  return adjacent_difference(select_system(system1(), system2()), first, last, result);
+  System1 system1;
+  System2 system2;
+
+  return thrust::adjacent_difference(select_system(system1, system2), first, last, result);
 } // end adjacent_difference()
+
 
 template <typename InputIterator, typename OutputIterator, typename BinaryFunction>
 OutputIterator adjacent_difference(InputIterator first, InputIterator last,
@@ -46,12 +73,14 @@ OutputIterator adjacent_difference(InputIterator first, InputIterator last,
                                    BinaryFunction binary_op)
 {
   using thrust::system::detail::generic::select_system;
-  using thrust::system::detail::generic::adjacent_difference;
 
-  typedef typename thrust::iterator_system<InputIterator>::type  system1;
-  typedef typename thrust::iterator_system<OutputIterator>::type system2;
+  typedef typename thrust::iterator_system<InputIterator>::type  System1;
+  typedef typename thrust::iterator_system<OutputIterator>::type System2;
 
-  return adjacent_difference(select_system(system1(), system2()), first, last, result, binary_op);
+  System1 system1;
+  System2 system2;
+
+  return thrust::adjacent_difference(select_system(system1, system2), first, last, result, binary_op);
 } // end adjacent_difference()
 
 

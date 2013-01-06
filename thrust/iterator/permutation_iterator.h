@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-/*! \file permutation_iterator.h
+/*! \file thrust/iterator/permutation_iterator.h
  *  \brief An iterator which performs a gather or scatter operation when dereferenced
  */
 
@@ -34,6 +34,7 @@
 #include <thrust/detail/config.h>
 #include <thrust/detail/type_traits.h>
 #include <thrust/iterator/detail/permutation_iterator_base.h>
+#include <thrust/iterator/iterator_facade.h>
 #include <thrust/iterator/iterator_traits.h>
 
 namespace thrust
@@ -127,7 +128,7 @@ template <typename ElementIterator,
   private:
     typedef typename detail::permutation_iterator_base<ElementIterator,IndexIterator>::type super_t;
 
-    friend class experimental::iterator_core_access;
+    friend class thrust::iterator_core_access;
   /*! \endcond
    */
 
@@ -166,6 +167,7 @@ template <typename ElementIterator,
   /*! \cond
    */
   private:
+    __thrust_hd_warning_disable__
     __host__ __device__
     typename super_t::reference dereference() const
     {

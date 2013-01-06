@@ -1,5 +1,7 @@
 #include <unittest/unittest.h>
 #include <thrust/reduce.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <limits>
 
 template<typename T>
   struct plus_mod_10
@@ -35,7 +37,24 @@ void TestReduceSimple(void)
 DECLARE_VECTOR_UNITTEST(TestReduceSimple);
 
 
-struct my_tag : thrust::device_system_tag {};
+template<typename InputIterator>
+int reduce(my_system &system, InputIterator, InputIterator)
+{
+    system.validate_dispatch();
+    return 13;
+}
+
+void TestReduceDispatchExplicit()
+{
+    thrust::device_vector<int> vec;
+
+    my_system sys(0);
+    thrust::reduce(sys, vec.begin(), vec.end());
+
+    ASSERT_EQUAL(true, sys.is_valid());
+}
+DECLARE_UNITTEST(TestReduceDispatchExplicit);
+
 
 template<typename InputIterator>
 int reduce(my_tag, InputIterator, InputIterator)
@@ -43,7 +62,7 @@ int reduce(my_tag, InputIterator, InputIterator)
     return 13;
 }
 
-void TestReduceDispatch()
+void TestReduceDispatchImplicit()
 {
     thrust::device_vector<int> vec;
 
@@ -52,7 +71,7 @@ void TestReduceDispatch()
 
     ASSERT_EQUAL(13, result);
 }
-DECLARE_UNITTEST(TestReduceDispatch);
+DECLARE_UNITTEST(TestReduceDispatchImplicit);
 
 
 template <typename T>
@@ -169,4 +188,23 @@ void TestReduceWithIndirection(void)
     ASSERT_EQUAL(result, T(1));
 }
 DECLARE_VECTOR_UNITTEST(TestReduceWithIndirection);
+
+template<typename T>
+  void TestReduceCountingIterator(size_t n)
+{
+  // be careful not to generate a range larger than we can represent
+  n = thrust::min<size_t>(n, std::numeric_limits<T>::max());
+
+  thrust::counting_iterator<T, thrust::host_system_tag>   h_first = thrust::make_counting_iterator<T>(0);
+  thrust::counting_iterator<T, thrust::device_system_tag> d_first = thrust::make_counting_iterator<T>(0);
+  
+  T init = 13;
+  
+  T h_result = thrust::reduce(h_first, h_first + n, init);
+  T d_result = thrust::reduce(d_first, d_first + n, init);
+  
+  // we use ASSERT_ALMOST_EQUAL because we're testing floating point types
+  ASSERT_ALMOST_EQUAL(h_result, d_result);
+}
+DECLARE_VARIABLE_UNITTEST(TestReduceCountingIterator);
 

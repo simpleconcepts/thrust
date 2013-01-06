@@ -47,13 +47,6 @@ template<typename Category, typename System, typename Traversal>
   typedef System type;
 }; // end iterator_category_with_system_and_traversal
 
-} // end detail
-
-namespace experimental
-{
-
-namespace detail
-{
 
 // adapted from http://www.boost.org/doc/libs/1_37_0/libs/iterator/doc/iterator_facade.html#iterator-category
 //
@@ -102,20 +95,14 @@ namespace detail
 template<typename System, typename Traversal, typename ValueParam, typename Reference>
   struct iterator_facade_default_category;
 
-//
-// Convert an iterator_facade's traversal category, Value parameter,
-// and ::reference type to an appropriate old-style category.
-//
-// If writability has been disabled per the above metafunction, the
-// result will not be convertible to output_iterator_tag.
-//
-// Otherwise, if Traversal == single_pass_traversal_tag, the following
-// conditions will result in a tag that is convertible both to
-// input_iterator_tag and output_iterator_tag:
-//
-//    1. Reference is a reference to non-const
-//    2. Reference is not a reference and is convertible to Value
-//
+
+// Thrust's implementation of iterator_facade_default_category is slightly
+// different from Boost's equivalent.
+// Thrust does not check is_convertible<Reference, ValueParam> because Reference
+// may not be a complete type at this point, and implementations of is_convertible
+// typically require that both types be complete.
+// Instead, it simply assumes that if is_convertible<Traversal, single_pass_traversal_tag>,
+// then the category is input_iterator_tag
 
 
 // this is the function for standard system iterators
@@ -132,11 +119,8 @@ template<typename Traversal, typename ValueParam, typename Reference>
           thrust::detail::identity_<std::forward_iterator_tag>
         >
       >,
-      thrust::detail::eval_if<
-        thrust::detail::and_<
-          thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>,
-          thrust::detail::is_convertible<Reference, ValueParam>
-        >::value,
+      thrust::detail::eval_if< // XXX note we differ from Boost here
+        thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>::value,
         thrust::detail::identity_<std::input_iterator_tag>,
         thrust::detail::identity_<Traversal>
       >
@@ -159,11 +143,8 @@ template<typename Traversal, typename ValueParam, typename Reference>
           thrust::detail::identity_<thrust::forward_host_iterator_tag>
         >
       >,
-      thrust::detail::eval_if<
-        thrust::detail::and_<
-          thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>,
-          thrust::detail::is_convertible<Reference, ValueParam>
-        >::value,
+      thrust::detail::eval_if< // XXX note we differ from Boost here
+        thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>::value,
         thrust::detail::identity_<thrust::input_host_iterator_tag>,
         thrust::detail::identity_<Traversal>
       >
@@ -187,10 +168,7 @@ template<typename Traversal, typename ValueParam, typename Reference>
         >
       >,
       thrust::detail::eval_if<
-        thrust::detail::and_<
-          thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>,
-          thrust::detail::is_convertible<Reference, ValueParam>
-        >::value,
+        thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>::value, // XXX note we differ from Boost here
         thrust::detail::identity_<thrust::input_device_iterator_tag>,
         thrust::detail::identity_<Traversal>
       >
@@ -218,10 +196,7 @@ template<typename Traversal, typename ValueParam, typename Reference>
       >,
 
       thrust::detail::eval_if<
-        thrust::detail::and_<
-          thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>,
-          thrust::detail::is_convertible<Reference, ValueParam>
-        >::value,
+        thrust::detail::is_convertible<Traversal, thrust::single_pass_traversal_tag>::value, // XXX note we differ from Boost here
         thrust::detail::identity_<thrust::input_universal_iterator_tag>,
         thrust::detail::identity_<Traversal>
       >
@@ -302,9 +277,7 @@ template<typename CategoryOrSystem,
   >::type type;
 }; // end iterator_facade_category
 
+
 } // end detail
-
-} // end experimental
-
 } // end thrust
 

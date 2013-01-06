@@ -22,9 +22,19 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/detail/dispatchable.h>
 
 namespace thrust
 {
+
+
+template<typename System, typename InputIterator1, typename InputIterator2>
+bool equal(const thrust::detail::dispatchable_base<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2);
+
+
+template<typename System, typename InputIterator1, typename InputIterator2, typename BinaryPredicate>
+bool equal(const thrust::detail::dispatchable_base<System> &system, InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, BinaryPredicate binary_pred);
+
 
 /*! \addtogroup reductions
  *  \{
@@ -61,7 +71,7 @@ namespace thrust
  *  int A1[7] = {3, 1, 4, 1, 5, 9, 3};
  *  int A2[7] = {3, 1, 4, 2, 8, 5, 7};
  *  ...
- *  bool result = thrust::equal(A1, A1 + 7, A1);
+ *  bool result = thrust::equal(A1, A1 + 7, A2);
  *
  *  // result == false
  *  \endcode
